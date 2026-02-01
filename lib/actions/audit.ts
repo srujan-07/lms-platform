@@ -66,7 +66,7 @@ export async function getUserAuditLogs(userId: string, limit = 50) {
     const { data, error } = await supabase
         .from('audit_logs')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', userId as any)
         .order('created_at', { ascending: false })
         .limit(limit);
 
@@ -91,7 +91,7 @@ export async function getAuditLogsByAction(action: string, limit = 50) {
       *,
       user:users(id, name, email)
     `)
-        .eq('action', action)
+        .eq('action', action as any)
         .order('created_at', { ascending: false })
         .limit(limit);
 
