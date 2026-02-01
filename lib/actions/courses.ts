@@ -140,12 +140,12 @@ export async function updateCourse(
         return { success: false, error: 'Unauthorized', data: null };
     }
 
-    const { data, error } = await supabase
+    const { data, error } = (await supabase
         .from('courses')
         .update(updates)
-        .eq('id', courseId as any)
+        .eq('id', courseId)
         .select()
-        .single();
+        .single()) as any;
 
     if (error) {
         return { success: false, error: error.message, data: null };
