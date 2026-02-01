@@ -140,12 +140,13 @@ export async function updateCourse(
         return { success: false, error: 'Unauthorized', data: null };
     }
 
+    // @ts-ignore - Supabase type inference issue with dynamic updates
     const { data, error } = await supabase
         .from('courses')
-        .update(updates as any)
+        .update(updates)
         .eq('id', courseId)
         .select()
-        .single() as any;
+        .single();
 
     if (error) {
         return { success: false, error: error.message, data: null };
