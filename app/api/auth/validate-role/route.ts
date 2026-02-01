@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Check access code
-        if (accessCode !== ACCESS_CODES[role]) {
+        const validCode = ACCESS_CODES[role as keyof typeof ACCESS_CODES];
+        if (accessCode !== validCode) {
             return NextResponse.json(
                 { error: 'Invalid access code for this role' },
                 { status: 403 }
