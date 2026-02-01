@@ -97,7 +97,7 @@ export async function createCourse(title: string, description: string, lecturerI
             title,
             description,
             lecturer_id: finalLecturerId,
-        })
+        } as any)
         .select()
         .single();
 
@@ -106,7 +106,7 @@ export async function createCourse(title: string, description: string, lecturerI
     }
 
     // Log action
-    await logAction(user.id, 'course.created', 'course', data.id, { title });
+    await logAction(user.id, 'course.created', 'course', (data as any).id, { title });
 
     revalidatePath('/lecturer/dashboard');
     revalidatePath('/admin/dashboard');
@@ -130,7 +130,7 @@ export async function updateCourse(
         .from('courses')
         .select('lecturer_id')
         .eq('id', courseId)
-        .single();
+        .single() as any;
 
     if (!course) {
         return { success: false, error: 'Course not found', data: null };
@@ -142,7 +142,7 @@ export async function updateCourse(
 
     const { data, error } = await supabase
         .from('courses')
-        .update(updates)
+        .update(updates as any)
         .eq('id', courseId)
         .select()
         .single();
@@ -172,7 +172,7 @@ export async function deleteCourse(courseId: string) {
         .from('courses')
         .select('lecturer_id, title')
         .eq('id', courseId)
-        .single();
+        .single() as any;
 
     if (!course) {
         return { success: false, error: 'Course not found' };
@@ -227,7 +227,7 @@ export async function getCourseDetails(courseId: string) {
     return {
         success: true,
         data: {
-            ...courseResult.data,
+            ...(courseResult.data as any),
             enrollment_count: enrollmentResult.count || 0,
         },
         error: null,
