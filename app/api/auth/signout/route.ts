@@ -1,19 +1,20 @@
 import { stackServerApp } from "@/lib/auth/stackauth";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export async function GET() {
-    // Clear the Stack session
-    const cookieStore = await cookies();
+    try {
+        // Get the current user
+        const user = await stackServerApp.getUser();
 
-    // Get all cookies and clear Stack-related ones
-    const allCookies = cookieStore.getAll();
-    for (const cookie of allCookies) {
-        if (cookie.name.startsWith('stack-') || cookie.name.includes('session')) {
-            cookieStore.delete(cookie.name);
+        // If user exists, sign them out using StackAuth's method
+        if (user) {
+            await user.signOut();
         }
+    } catch (error) {
+        // User might already be signed out, continue to redirect
+        console.log('Sign out error (user may already be signed out):', error);
     }
 
-    // Redirect to home page using Next.js redirect (relative URL)
+    // Redirect to home page
     redirect('/');
 }
