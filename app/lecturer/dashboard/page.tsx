@@ -13,7 +13,7 @@ export default async function LecturerDashboard() {
     // Get lecturer's courses
     const { data: courses } = await getCoursesByLecturer(user.id);
 
-    const signOutUrl = stackServerApp.urls.signOut;
+    const signOutUrl = '/api/auth/signout';
 
     return (
         <div className="min-h-screen bg-gray-50">

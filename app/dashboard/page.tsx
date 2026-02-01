@@ -25,7 +25,7 @@ export default async function StudentDashboard() {
     const { data: enrollments } = await getEnrolledCourses(user.id);
     const courses = (enrollments as any[])?.map(e => e.course).filter(Boolean) || [];
 
-    const signOutUrl = stackServerApp.urls.signOut;
+    const signOutUrl = '/api/auth/signout';
 
     return (
         <div className="min-h-screen bg-gray-50">

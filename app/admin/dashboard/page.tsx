@@ -23,7 +23,7 @@ export default async function AdminDashboard() {
     const lecturerCount = users.filter(u => u.role === 'lecturer').length;
     const adminCount = users.filter(u => u.role === 'admin').length;
 
-    const signOutUrl = stackServerApp.urls.signOut;
+    const signOutUrl = '/api/auth/signout';
 
     return (
         <div className="min-h-screen bg-gray-50">
