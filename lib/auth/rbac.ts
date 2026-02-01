@@ -6,25 +6,20 @@ import { redirect } from 'next/navigation';
 /**
  * Get the current user's role from the database
  */
-export async function getUserRole(userId: string): Promise<{ id: string; name: string; email: string; role: UserRole } | null> {
+export async function getUserRole(userId: string): Promise<UserRole | null> {
     const supabase = await createClient();
 
-    const { data: dbUser } = await supabase
+    const { data, error } = await supabase
         .from('users')
-        .select('id, name, email, role')
+        .select('role')
         .eq('id', userId)
         .single() as any;
 
-    if (!dbUser) {
-        return null; // Changed from throwing error to returning null to match original function's null return on no data
+    if (error || !data) {
+        return null;
     }
 
-    return {
-        id: dbUser.id,
-        name: dbUser.name,
-        email: dbUser.email,
-        role: dbUser.role as UserRole,
-    };
+    return data.role as UserRole;
 }
 
 /**
