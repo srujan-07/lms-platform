@@ -23,7 +23,7 @@ export default async function StudentDashboard() {
 
     // Get enrolled courses
     const { data: enrollments } = await getEnrolledCourses(user.id);
-    const courses = enrollments?.map(e => e.course).filter(Boolean) || [];
+    const courses = (enrollments as any[])?.map(e => e.course).filter(Boolean) || [];
 
     const signOutUrl = stackServerApp.urls.signOut;
 
