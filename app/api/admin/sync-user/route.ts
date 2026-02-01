@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
         const stackUsers = await stackServerApp.listUsers();
 
         // Find the user by email
-        const stackUser = stackUsers.items.find(
+        const stackUser = stackUsers.find(
             u => u.primaryEmail?.toLowerCase() === email.toLowerCase()
         );
 
@@ -81,8 +81,8 @@ export async function GET() {
         const stackUsers = await stackServerApp.listUsers();
 
         return NextResponse.json({
-            count: stackUsers.items.length,
-            users: stackUsers.items.map(u => ({
+            count: stackUsers.length,
+            users: stackUsers.map(u => ({
                 id: u.id,
                 email: u.primaryEmail,
                 name: u.displayName,
