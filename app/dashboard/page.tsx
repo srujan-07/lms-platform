@@ -84,7 +84,7 @@ export default async function StudentDashboard() {
                             <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                             <h4 className="text-lg font-semibold text-gray-900 mb-2">No Courses Yet</h4>
                             <p className="text-gray-600">
-                                You haven't been enrolled in any courses yet. Contact your administrator for enrollment.
+                                You haven&apos;t been enrolled in any courses yet. Contact your administrator for enrollment.
                             </p>
                         </div>
                     ) : (
