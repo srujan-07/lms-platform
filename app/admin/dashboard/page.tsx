@@ -16,7 +16,7 @@ export default async function AdminDashboard() {
         getCourses(),
     ]);
 
-    const users = usersResult.data || [];
+    const users = (usersResult.data || []) as any[];
     const courses = coursesResult.data || [];
 
     const studentCount = users.filter(u => u.role === 'student').length;
