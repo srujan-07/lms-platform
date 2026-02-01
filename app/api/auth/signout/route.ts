@@ -1,5 +1,6 @@
 import { stackServerApp } from "@/lib/auth/stackauth";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function GET() {
     // Clear the Stack session
@@ -13,6 +14,6 @@ export async function GET() {
         }
     }
 
-    // Redirect to home page
-    return Response.redirect(new URL('/', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'));
+    // Redirect to home page using Next.js redirect (relative URL)
+    redirect('/');
 }
