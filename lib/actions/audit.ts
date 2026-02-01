@@ -24,7 +24,7 @@ export async function logAction(
             metadata: metadata || null,
             ip_address: null, // Can be populated from request headers
             user_agent: null, // Can be populated from request headers
-        });
+        } as any);
     } catch (error) {
         console.error('Failed to log action:', error);
         // Don't throw - logging failures shouldn't break the main operation
