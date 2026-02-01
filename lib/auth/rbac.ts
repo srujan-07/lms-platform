@@ -118,7 +118,7 @@ export async function syncUserToDatabase(
             email,
             name,
             role,
-        }, {
+        } as any, {
             onConflict: 'id',
         });
 
