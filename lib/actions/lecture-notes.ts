@@ -78,7 +78,7 @@ export async function uploadLectureNote(
             file_path: uploadResult.filePath,
             file_size: file.size,
             uploaded_by: user.id,
-        })
+        } as any)
         .select()
         .single();
 
@@ -88,7 +88,7 @@ export async function uploadLectureNote(
         return { success: false, error: error.message, data: null };
     }
 
-    await logAction(user.id, 'lecture_note.uploaded', 'lecture_note', data.id, {
+    await logAction(user.id, 'lecture_note.uploaded', 'lecture_note', (data as any).id, {
         title,
         course_id: courseId,
         file_size: file.size,
@@ -113,7 +113,7 @@ export async function getDownloadURL(noteId: string) {
         .from('lecture_notes')
         .select('file_path, title, course_id')
         .eq('id', noteId)
-        .single();
+        .single() as any;
 
     if (error || !note) {
         return { success: false, error: 'Lecture note not found', url: null };
@@ -131,7 +131,7 @@ export async function getDownloadURL(noteId: string) {
         .from('courses')
         .select('lecturer_id')
         .eq('id', note.course_id)
-        .single();
+        .single() as any;
 
     const hasAccess =
         enrollment ||
@@ -170,7 +170,7 @@ export async function deleteLectureNote(noteId: string) {
         .from('lecture_notes')
         .select('file_path, uploaded_by, course_id, title')
         .eq('id', noteId)
-        .single();
+        .single() as any;
 
     if (!note) {
         return { success: false, error: 'Lecture note not found' };
@@ -220,7 +220,7 @@ export async function updateLectureNote(
         .from('lecture_notes')
         .select('uploaded_by')
         .eq('id', noteId)
-        .single();
+        .single() as any;
 
     if (!note) {
         return { success: false, error: 'Lecture note not found', data: null };
@@ -230,6 +230,7 @@ export async function updateLectureNote(
         return { success: false, error: 'Unauthorized', data: null };
     }
 
+    // @ts-ignore - Supabase type inference issue with dynamic updates
     const { data, error } = await supabase
         .from('lecture_notes')
         .update(updates)
