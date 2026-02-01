@@ -142,8 +142,8 @@ export async function updateCourse(
 
     const { data, error } = await supabase
         .from('courses')
-        .update(updates as any)
-        .eq('id', courseId)
+        .update(updates)
+        .eq('id', courseId as any)
         .select()
         .single();
 
