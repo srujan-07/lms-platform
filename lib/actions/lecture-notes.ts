@@ -45,7 +45,7 @@ export async function uploadLectureNote(
         .from('courses')
         .select('lecturer_id')
         .eq('id', courseId)
-        .single();
+        .single() as any;
 
     if (!course) {
         return { success: false, error: 'Course not found', data: null };
