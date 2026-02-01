@@ -1,12 +1,13 @@
 import { stackServerApp } from './lib/auth/stackauth';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { createClient } from './lib/supabase/server';
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Public routes that don't require authentication
-    const publicRoutes = ['/', '/handler'];
+    const publicRoutes = ['/', '/handler', '/signup', '/api'];
 
     // Allow access to public routes and all handler sub-routes
     if (publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))) {
@@ -24,9 +25,40 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(url);
     }
 
+    // Sync user to Supabase if not already synced
+    try {
+        const supabase = await createClient();
+
+        // Check if user exists in Supabase
+        const { data: existingUser } = await supabase
+            .from('users')
+            .select('id')
+            .eq('id', user.id)
+            .single();
+
+        // If user doesn't exist, create them with default student role
+        if (!existingUser) {
+            const { error } = await supabase
+                .from('users')
+                .insert({
+                    id: user.id,
+                    email: user.primaryEmail || '',
+                    name: user.displayName || user.primaryEmail || 'User',
+                    role: 'student', // Default role, can be changed by admin
+                } as any);
+
+            if (error) {
+                console.error('Error syncing user to Supabase:', error);
+            }
+        }
+    } catch (error) {
+        console.error('Error in user sync middleware:', error);
+        // Continue anyway - don't block the request
+    }
+
     // Role-based route protection
     // Note: We'll get the role from the database in the actual page components
-    // This middleware just ensures authentication
+    // This middleware just ensures authentication and user sync
 
     return NextResponse.next();
 }
