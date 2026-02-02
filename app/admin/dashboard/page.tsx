@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation';
 import { requireRole } from '@/lib/auth/rbac';
-import { Shield, Users, BookOpen, FileText, LogOut, Activity } from 'lucide-react';
+import { Shield, Users, BookOpen, FileText, LogOut, Activity, TrendingUp, UserPlus } from 'lucide-react';
 import { getAllUsers } from '@/lib/actions/users';
 import { getCourses } from '@/lib/actions/courses';
 import Link from 'next/link';
 import { RoleBadge } from '@/components/ui/RoleBadge';
-import { stackServerApp } from '@/lib/auth/stackauth';
+import { DashboardStats } from '@/components/dashboard/DashboardStats';
+import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 
 export default async function AdminDashboard() {
     const user = await requireRole('admin');
@@ -23,12 +24,22 @@ export default async function AdminDashboard() {
     const lecturerCount = users.filter(u => u.role === 'lecturer').length;
     const adminCount = users.filter(u => u.role === 'admin').length;
 
+    // Mock recent activity
+    const recentActivities = users.slice(0, 5).map((u: any, index) => ({
+        id: `activity-${index}`,
+        icon: UserPlus,
+        title: `New user: ${u.name}`,
+        description: `Registered as ${u.role}`,
+        timestamp: new Date(u.created_at || Date.now()),
+        colorScheme: 'admin' as const,
+    }));
+
     const signOutUrl = '/api/auth/signout';
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gradient-to-br from-admin-50 via-white to-purple-50">
             {/* Navigation */}
-            <nav className="bg-white shadow-sm border-b">
+            <nav className="bg-white shadow-sm border-b sticky top-0 z-10">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
@@ -58,59 +69,40 @@ export default async function AdminDashboard() {
             {/* Main Content */}
             <main className="container mx-auto px-4 py-8">
                 <div className="mb-8">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2">System Overview</h2>
-                    <p className="text-gray-600">Manage users, courses, enrollments, and system settings</p>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                        System Overview 🛡️
+                    </h2>
+                    <p className="text-gray-600">
+                        Manage users, courses, enrollments, and system settings
+                    </p>
                 </div>
 
                 {/* Stats Grid */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div className="card p-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-student-100 rounded-lg flex items-center justify-center">
-                                <Users className="w-6 h-6 text-student-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold">{studentCount}</p>
-                                <p className="text-sm text-gray-600">Students</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="card p-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-lecturer-100 rounded-lg flex items-center justify-center">
-                                <Users className="w-6 h-6 text-lecturer-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold">{lecturerCount}</p>
-                                <p className="text-sm text-gray-600">Lecturers</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="card p-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-admin-100 rounded-lg flex items-center justify-center">
-                                <Shield className="w-6 h-6 text-admin-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold">{adminCount}</p>
-                                <p className="text-sm text-gray-600">Admins</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="card p-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                                <BookOpen className="w-6 h-6 text-primary-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold">{courses.length}</p>
-                                <p className="text-sm text-gray-600">Total Courses</p>
-                            </div>
-                        </div>
-                    </div>
+                    <DashboardStats
+                        icon={Users}
+                        value={studentCount}
+                        label="Students"
+                        colorScheme="student"
+                    />
+                    <DashboardStats
+                        icon={Users}
+                        value={lecturerCount}
+                        label="Lecturers"
+                        colorScheme="lecturer"
+                    />
+                    <DashboardStats
+                        icon={Shield}
+                        value={adminCount}
+                        label="Admins"
+                        colorScheme="admin"
+                    />
+                    <DashboardStats
+                        icon={BookOpen}
+                        value={courses.length}
+                        label="Total Courses"
+                        colorScheme="primary"
+                    />
                 </div>
 
                 {/* Quick Actions */}
@@ -168,45 +160,54 @@ export default async function AdminDashboard() {
                     </Link>
                 </div>
 
-                {/* Recent Users */}
-                <div>
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-2xl font-bold">Recent Users</h3>
-                        <Link href="/admin/users" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-                            View All →
-                        </Link>
-                    </div>
-                    <div className="card overflow-hidden">
-                        <table className="w-full">
-                            <thead className="bg-gray-50 border-b">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Name
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Email
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Role
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {users.slice(0, 5).map((u: any) => (
-                                    <tr key={u.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {u.name}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {u.email}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <RoleBadge role={u.role} />
-                                        </td>
+                {/* Content Grid */}
+                <div className="grid lg:grid-cols-3 gap-8">
+                    {/* Main Content - Recent Users */}
+                    <div className="lg:col-span-2">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-2xl font-bold">Recent Users</h3>
+                            <Link href="/admin/users" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                                View All →
+                            </Link>
+                        </div>
+                        <div className="card overflow-hidden">
+                            <table className="w-full">
+                                <thead className="bg-gray-50 border-b">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Name
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Email
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Role
+                                        </th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {users.slice(0, 5).map((u: any) => (
+                                        <tr key={u.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                {u.name}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {u.email}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <RoleBadge role={u.role} />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Sidebar - Activity Feed */}
+                    <div className="lg:col-span-1">
+                        <h3 className="text-xl font-bold mb-4">System Activity</h3>
+                        <ActivityFeed activities={recentActivities} maxItems={8} />
                     </div>
                 </div>
             </main>

@@ -19,7 +19,7 @@ export default function HomePage() {
                             Sign In
                         </Link>
                         <Link
-                            href="/signup"
+                            href="/handler/sign-up"
                             className="btn btn-primary px-6 py-2"
                         >
                             Sign Up
@@ -37,7 +37,7 @@ export default function HomePage() {
                         to collaborate on cutting-edge AI and cybersecurity education.
                     </p>
                     <Link
-                        href="/signup"
+                        href="/handler/sign-up"
                         className="btn btn-primary px-8 py-3 text-lg inline-flex items-center gap-2"
                     >
                         Get Started

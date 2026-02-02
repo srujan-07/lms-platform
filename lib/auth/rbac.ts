@@ -4,26 +4,8 @@ import type { UserRole } from '@/types/database';
 import { redirect } from 'next/navigation';
 
 /**
- * Get the current user's role from the database
- */
-export async function getUserRole(userId: string): Promise<UserRole | null> {
-    const supabase = await createClient();
-
-    const { data, error } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', userId)
-        .single() as any;
-
-    if (error || !data) {
-        return null;
-    }
-
-    return data.role as UserRole;
-}
-
-/**
- * Get the current authenticated user with role
+ * Get the current authenticated user with role from StackAuth
+ * Roles are stored in StackAuth's serverMetadata.role
  */
 export async function getCurrentUser() {
     const user = await stackServerApp.getUser();
@@ -32,13 +14,15 @@ export async function getCurrentUser() {
         return null;
     }
 
-    const role = await getUserRole(user.id);
+    // Read role from StackAuth serverMetadata
+    // Default to 'student' if no role is set
+    const role = (user.serverMetadata?.role as UserRole) || 'student';
 
     return {
         id: user.id,
         email: user.primaryEmail || '',
         name: user.displayName || user.primaryEmail || 'User',
-        role: role || 'student',
+        role,
     };
 }
 
@@ -81,15 +65,15 @@ export async function requireRole(allowedRoles: UserRole | UserRole[]) {
 }
 
 /**
- * Check if user has permission for a specific action
+ * Check if current user has permission for a specific action
+ * Note: This checks the currently authenticated user, not a specific userId
  */
 export async function hasPermission(
-    userId: string,
     permission: 'manage_users' | 'manage_courses' | 'upload_content' | 'view_audit_logs'
 ): Promise<boolean> {
-    const role = await getUserRole(userId);
+    const user = await getCurrentUser();
 
-    if (!role) return false;
+    if (!user) return false;
 
     const permissions: Record<UserRole, string[]> = {
         admin: ['manage_users', 'manage_courses', 'upload_content', 'view_audit_logs'],
@@ -97,17 +81,17 @@ export async function hasPermission(
         student: [],
     };
 
-    return permissions[role]?.includes(permission) || false;
+    return permissions[user.role]?.includes(permission) || false;
 }
 
 /**
- * Sync user from StackAuth to Supabase database
+ * Sync user basic info to Supabase database (for relational data)
+ * Note: Roles are NOT stored in Supabase - they come from StackAuth
  */
 export async function syncUserToDatabase(
     userId: string,
     email: string,
-    name: string,
-    role: UserRole = 'student'
+    name: string
 ) {
     const supabase = await createClient();
 
@@ -117,7 +101,7 @@ export async function syncUserToDatabase(
             id: userId,
             email,
             name,
-            role,
+            // Role is intentionally NOT included - it comes from StackAuth
         } as any, {
             onConflict: 'id',
         });

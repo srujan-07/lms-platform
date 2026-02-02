@@ -1,10 +1,13 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth/rbac';
-import { BookOpen, Upload, Users, LogOut } from 'lucide-react';
+import { BookOpen, Upload, Users, LogOut, Clock, TrendingUp, FileText } from 'lucide-react';
 import { getEnrolledCourses } from '@/lib/actions/courses';
 import Link from 'next/link';
 import { RoleBadge } from '@/components/ui/RoleBadge';
-import { stackServerApp } from '@/lib/auth/stackauth';
+import { DashboardStats } from '@/components/dashboard/DashboardStats';
+import { CourseCard } from '@/components/dashboard/CourseCard';
+import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
+import { formatDistanceToNow } from 'date-fns';
 
 export default async function StudentDashboard() {
     const user = await getCurrentUser();
@@ -25,16 +28,31 @@ export default async function StudentDashboard() {
     const { data: enrollments } = await getEnrolledCourses(user.id);
     const courses = (enrollments as any[])?.map(e => e.course).filter(Boolean) || [];
 
+    // Calculate stats
+    const totalCourses = courses.length;
+    const completedCourses = 0; // TODO: Implement completion tracking
+    const inProgressCourses = totalCourses - completedCourses;
+
+    // Mock recent activity (TODO: Implement real activity tracking)
+    const recentActivities = courses.slice(0, 3).map((course: any, index) => ({
+        id: `activity-${index}`,
+        icon: BookOpen,
+        title: `Accessed ${course.title}`,
+        description: 'Viewed lecture materials',
+        timestamp: new Date(Date.now() - index * 3600000), // Mock timestamps
+        colorScheme: 'student' as const,
+    }));
+
     const signOutUrl = '/api/auth/signout';
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gradient-to-br from-student-50 via-white to-primary-50">
             {/* Navigation */}
-            <nav className="bg-white shadow-sm border-b">
+            <nav className="bg-white shadow-sm border-b sticky top-0 z-10">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
-                            <BookOpen className="w-6 h-6 text-primary-600" />
+                            <BookOpen className="w-6 h-6 text-student-600" />
                             <h1 className="text-xl font-bold">Student Dashboard</h1>
                         </div>
                         <div className="flex items-center gap-4">
@@ -56,57 +74,111 @@ export default async function StudentDashboard() {
 
             {/* Main Content */}
             <main className="container mx-auto px-4 py-8">
+                {/* Welcome Section */}
                 <div className="mb-8">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {user.name}!</h2>
-                    <p className="text-gray-600">Access your enrolled courses and learning materials</p>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                        Welcome back, {user.name}! 👋
+                    </h2>
+                    <p className="text-gray-600">
+                        Continue your learning journey and explore your courses
+                    </p>
                 </div>
 
-                {/* Stats */}
+                {/* Stats Grid */}
                 <div className="grid md:grid-cols-3 gap-6 mb-8">
-                    <div className="card p-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                                <BookOpen className="w-6 h-6 text-primary-600" />
+                    <DashboardStats
+                        icon={BookOpen}
+                        value={totalCourses}
+                        label="Enrolled Courses"
+                        colorScheme="student"
+                    />
+                    <DashboardStats
+                        icon={TrendingUp}
+                        value={inProgressCourses}
+                        label="In Progress"
+                        colorScheme="primary"
+                    />
+                    <DashboardStats
+                        icon={FileText}
+                        value={completedCourses}
+                        label="Completed"
+                        colorScheme="success"
+                    />
+                </div>
+
+                <div className="grid lg:grid-cols-3 gap-8">
+                    {/* Main Content - Courses */}
+                    <div className="lg:col-span-2">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-2xl font-bold">My Courses</h3>
+                            {courses.length > 0 && (
+                                <div className="text-sm text-gray-500">
+                                    {totalCourses} {totalCourses === 1 ? 'course' : 'courses'}
+                                </div>
+                            )}
+                        </div>
+
+                        {courses.length === 0 ? (
+                            <div className="card p-12 text-center">
+                                <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                                <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                                    No Courses Yet
+                                </h4>
+                                <p className="text-gray-600">
+                                    You haven&apos;t been enrolled in any courses yet. Contact your administrator for enrollment.
+                                </p>
                             </div>
-                            <div>
-                                <p className="text-2xl font-bold">{courses.length}</p>
-                                <p className="text-sm text-gray-600">Enrolled Courses</p>
+                        ) : (
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {courses.map((course: any) => (
+                                    <CourseCard
+                                        key={course.id}
+                                        id={course.id}
+                                        title={course.title}
+                                        description={course.description}
+                                        href={`/dashboard/courses/${course.id}`}
+                                        role="student"
+                                        metadata={{
+                                            lecturerName: course.lecturer?.name || 'Unknown',
+                                            progress: Math.floor(Math.random() * 100), // TODO: Real progress
+                                            lastAccessed: formatDistanceToNow(new Date(course.created_at || Date.now()), { addSuffix: true }),
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Sidebar - Recent Activity */}
+                    <div className="lg:col-span-1">
+                        <h3 className="text-xl font-bold mb-4">Recent Activity</h3>
+                        {recentActivities.length > 0 ? (
+                            <ActivityFeed activities={recentActivities} maxItems={5} />
+                        ) : (
+                            <div className="card p-8 text-center">
+                                <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                                <p className="text-sm text-gray-500">
+                                    No recent activity
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Quick Links */}
+                        <div className="mt-6">
+                            <h3 className="text-lg font-semibold mb-3">Quick Links</h3>
+                            <div className="space-y-2">
+                                <Link
+                                    href="/dashboard"
+                                    className="block p-3 rounded-lg bg-white border hover:border-student-300 hover:shadow-sm transition-all"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <BookOpen className="w-4 h-4 text-student-600" />
+                                        <span className="text-sm font-medium">All Courses</span>
+                                    </div>
+                                </Link>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                {/* Enrolled Courses */}
-                <div>
-                    <h3 className="text-2xl font-bold mb-4">My Courses</h3>
-                    {courses.length === 0 ? (
-                        <div className="card p-12 text-center">
-                            <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                            <h4 className="text-lg font-semibold text-gray-900 mb-2">No Courses Yet</h4>
-                            <p className="text-gray-600">
-                                You haven&apos;t been enrolled in any courses yet. Contact your administrator for enrollment.
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {courses.map((course: any) => (
-                                <Link
-                                    key={course.id}
-                                    href={`/dashboard/courses/${course.id}`}
-                                    className="card p-6 hover:shadow-lg transition-all hover:-translate-y-1"
-                                >
-                                    <h4 className="text-lg font-semibold mb-2">{course.title}</h4>
-                                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                                        {course.description || 'No description available'}
-                                    </p>
-                                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                                        <Users className="w-4 h-4" />
-                                        <span>{course.lecturer?.name || 'Unknown'}</span>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    )}
                 </div>
             </main>
         </div>
