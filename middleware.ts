@@ -56,6 +56,39 @@ export async function middleware(request: NextRequest) {
         // Continue anyway - don't block the request
     }
 
+    // Check onboarding completion for students
+    const userRole = user.serverMetadata?.role;
+
+    if (userRole === 'student') {
+        // Allow access to onboarding routes
+        if (pathname.startsWith('/onboarding') || pathname.startsWith('/api/onboarding')) {
+            return NextResponse.next();
+        }
+
+        // Check if student has completed onboarding
+        try {
+            const supabase = await createClient();
+            const { data: profile } = await supabase
+                .from('student_profiles')
+                .select('onboarding_completed_at')
+                .eq('user_id', user.id)
+                .single();
+
+            // If no profile or not completed, redirect to onboarding
+            if (!profile || !(profile as any).onboarding_completed_at) {
+                const url = request.nextUrl.clone();
+                url.pathname = '/onboarding';
+                return NextResponse.redirect(url);
+            }
+        } catch (error) {
+            console.error('Error checking onboarding status:', error);
+            // On error, redirect to onboarding to be safe
+            const url = request.nextUrl.clone();
+            url.pathname = '/onboarding';
+            return NextResponse.redirect(url);
+        }
+    }
+
     // Role-based route protection
     // Note: We'll get the role from the database in the actual page components
     // This middleware just ensures authentication and user sync

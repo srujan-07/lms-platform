@@ -1,18 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCourses, createCourse } from '@/lib/actions/courses';
+import { getCourseMaterials, uploadCourseMaterial } from '@/lib/actions/materials';
 import { stackServerApp } from '@/lib/auth/stackauth';
-import { z } from 'zod';
 
-const createCourseSchema = z.object({
-    title: z.string().min(1, 'Title is required').max(200),
-    description: z.string().max(1000).optional(),
-    lecturerId: z.string().uuid().optional(),
-    accessCode: z.string().min(4).max(20).optional(),
-});
-
-export async function GET(request: NextRequest) {
+export async function GET(
+    request: NextRequest,
+    { params }: { params: { id: string } }
+) {
     try {
-        // Get all courses (public endpoint, but requires authentication)
         const user = await stackServerApp.getUser();
         if (!user) {
             return NextResponse.json(
@@ -21,18 +15,18 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const result = await getCourses();
+        const result = await getCourseMaterials(params.id);
 
         if (!result.success) {
             return NextResponse.json(
                 { success: false, error: result.error, data: null },
-                { status: 400 }
+                { status: 403 }
             );
         }
 
         return NextResponse.json(result, { status: 200 });
     } catch (error) {
-        console.error('Error in GET /api/courses:', error);
+        console.error('Error in GET /api/courses/[id]/materials:', error);
         return NextResponse.json(
             { success: false, error: 'Internal server error', data: null },
             { status: 500 }
@@ -40,9 +34,11 @@ export async function GET(request: NextRequest) {
     }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(
+    request: NextRequest,
+    { params }: { params: { id: string } }
+) {
     try {
-        // Check authentication
         const user = await stackServerApp.getUser();
         if (!user) {
             return NextResponse.json(
@@ -51,30 +47,45 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check if user is lecturer or admin
+        // Only admin/lecturer can upload
         const userRole = user.serverMetadata?.role;
-        if (userRole !== 'lecturer' && userRole !== 'admin') {
+        if (userRole === 'student') {
             return NextResponse.json(
-                { success: false, error: 'Forbidden - Lecturer or Admin access required', data: null },
+                { success: false, error: 'Students cannot upload materials', data: null },
                 { status: 403 }
             );
         }
 
-        // Parse and validate request body
-        const body = await request.json();
-        const validation = createCourseSchema.safeParse(body);
+        const formData = await request.formData();
+        const file = formData.get('file') as File;
+        const title = formData.get('title') as string;
+        const description = formData.get('description') as string | undefined;
 
-        if (!validation.success) {
+        if (!file || !title) {
             return NextResponse.json(
-                { success: false, error: 'Invalid request body', data: validation.error.errors },
+                { success: false, error: 'File and title are required', data: null },
                 { status: 400 }
             );
         }
 
-        const { title, description, lecturerId, accessCode } = validation.data;
+        // Validate file type (PDF only)
+        if (file.type !== 'application/pdf') {
+            return NextResponse.json(
+                { success: false, error: 'Only PDF files are allowed', data: null },
+                { status: 400 }
+            );
+        }
 
-        // Create course
-        const result = await createCourse(title, description || '', lecturerId, accessCode);
+        // Validate file size (max 10MB)
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+            return NextResponse.json(
+                { success: false, error: 'File size must be less than 10MB', data: null },
+                { status: 400 }
+            );
+        }
+
+        const result = await uploadCourseMaterial(params.id, file, title, description);
 
         if (!result.success) {
             return NextResponse.json(
@@ -85,7 +96,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(result, { status: 201 });
     } catch (error) {
-        console.error('Error in POST /api/courses:', error);
+        console.error('Error in POST /api/courses/[id]/materials:', error);
         return NextResponse.json(
             { success: false, error: 'Internal server error', data: null },
             { status: 500 }

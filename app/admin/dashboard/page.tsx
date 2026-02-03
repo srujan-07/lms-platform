@@ -1,8 +1,9 @@
 import { redirect } from 'next/navigation';
 import { requireRole } from '@/lib/auth/rbac';
-import { Shield, Users, BookOpen, FileText, LogOut, Activity, TrendingUp, UserPlus } from 'lucide-react';
+import { Shield, Users, BookOpen, FileText, LogOut, Activity, TrendingUp, UserPlus, GraduationCap } from 'lucide-react';
 import { getAllUsers } from '@/lib/actions/users';
 import { getCourses } from '@/lib/actions/courses';
+import { getGlobalAnalytics, getAllStudentProfilesWithDetails, getEnrollmentStatistics } from '@/lib/actions/analytics';
 import Link from 'next/link';
 import { RoleBadge } from '@/components/ui/RoleBadge';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
@@ -11,14 +12,20 @@ import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 export default async function AdminDashboard() {
     const user = await requireRole('admin');
 
-    // Get all users and courses
-    const [usersResult, coursesResult] = await Promise.all([
+    // Get analytics data
+    const [usersResult, coursesResult, analyticsResult, studentsResult, enrollmentStatsResult] = await Promise.all([
         getAllUsers(),
         getCourses(),
+        getGlobalAnalytics(),
+        getAllStudentProfilesWithDetails(),
+        getEnrollmentStatistics(),
     ]);
 
     const users = (usersResult.data || []) as any[];
     const courses = coursesResult.data || [];
+    const analytics = analyticsResult.data;
+    const studentProfiles = (studentsResult.data || []) as any[];
+    const enrollmentStats = (enrollmentStatsResult.data || []) as any[];
 
     const studentCount = users.filter(u => u.role === 'student').length;
     const lecturerCount = users.filter(u => u.role === 'lecturer').length;
@@ -81,27 +88,27 @@ export default async function AdminDashboard() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <DashboardStats
                         icon={Users}
-                        value={studentCount}
+                        value={analytics?.totalStudents || studentCount}
                         label="Students"
                         colorScheme="student"
                     />
                     <DashboardStats
-                        icon={Users}
-                        value={lecturerCount}
-                        label="Lecturers"
+                        icon={BookOpen}
+                        value={analytics?.totalCourses || courses.length}
+                        label="Total Courses"
+                        colorScheme="primary"
+                    />
+                    <DashboardStats
+                        icon={TrendingUp}
+                        value={analytics?.totalEnrollments || 0}
+                        label="Total Enrollments"
                         colorScheme="lecturer"
                     />
                     <DashboardStats
-                        icon={Shield}
-                        value={adminCount}
-                        label="Admins"
+                        icon={FileText}
+                        value={analytics?.totalMaterials || 0}
+                        label="Course Materials"
                         colorScheme="admin"
-                    />
-                    <DashboardStats
-                        icon={BookOpen}
-                        value={courses.length}
-                        label="Total Courses"
-                        colorScheme="primary"
                     />
                 </div>
 
@@ -162,45 +169,106 @@ export default async function AdminDashboard() {
 
                 {/* Content Grid */}
                 <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Main Content - Recent Users */}
-                    <div className="lg:col-span-2">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-2xl font-bold">Recent Users</h3>
-                            <Link href="/admin/users" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
-                                View All →
-                            </Link>
+                    {/* Main Content - Enrollment Statistics */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Enrollment Stats */}
+                        <div>
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-2xl font-bold">Enrollment Statistics</h3>
+                            </div>
+                            <div className="card overflow-hidden">
+                                {enrollmentStats.length === 0 ? (
+                                    <div className="p-8 text-center text-gray-500">
+                                        No courses available
+                                    </div>
+                                ) : (
+                                    <table className="w-full">
+                                        <thead className="bg-gray-50 border-b">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Course
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Lecturer
+                                                </th>
+                                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Enrollments
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {enrollmentStats.map((stat: any) => (
+                                                <tr key={stat.id} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                                                        {stat.title}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-gray-500">
+                                                        {stat.lecturer?.name || 'Unassigned'}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-center">
+                                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                                                            {stat.enrollment_count}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
                         </div>
-                        <div className="card overflow-hidden">
-                            <table className="w-full">
-                                <thead className="bg-gray-50 border-b">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Name
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Email
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Role
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {users.slice(0, 5).map((u: any) => (
-                                        <tr key={u.id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {u.name}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {u.email}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <RoleBadge role={u.role} />
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+
+                        {/* Student Profiles */}
+                        <div>
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-2xl font-bold">Student Onboarding</h3>
+                            </div>
+                            <div className="card overflow-hidden">
+                                {studentProfiles.length === 0 ? (
+                                    <div className="p-8 text-center text-gray-500">
+                                        No student profiles yet
+                                    </div>
+                                ) : (
+                                    <table className="w-full">
+                                        <thead className="bg-gray-50 border-b">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Student
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Class
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Section
+                                                </th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Onboarded
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-200">
+                                            {studentProfiles.slice(0, 10).map((profile: any) => (
+                                                <tr key={profile.id} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                                                        {profile.user?.name || 'Unknown'}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-gray-500">
+                                                        {profile.class}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-gray-500">
+                                                        {profile.section}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-gray-500">
+                                                        {profile.onboarding_completed_at
+                                                            ? new Date(profile.onboarding_completed_at).toLocaleDateString()
+                                                            : 'Pending'}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
                         </div>
                     </div>
 

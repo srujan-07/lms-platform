@@ -74,7 +74,12 @@ export async function getEnrolledCourses(studentId: string) {
 /**
  * Create a new course
  */
-export async function createCourse(title: string, description: string, lecturerId?: string) {
+export async function createCourse(
+    title: string,
+    description: string,
+    lecturerId?: string,
+    accessCode?: string
+) {
     const user = await requireAuth();
 
     // Determine lecturer ID
@@ -89,6 +94,9 @@ export async function createCourse(title: string, description: string, lecturerI
         return { success: false, error: 'Lecturers can only create courses for themselves', data: null };
     }
 
+    // Generate access code if not provided
+    const finalAccessCode = accessCode || generateAccessCode();
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -97,6 +105,7 @@ export async function createCourse(title: string, description: string, lecturerI
             title,
             description,
             lecturer_id: finalLecturerId,
+            access_code: finalAccessCode,
         } as any)
         .select()
         .single();
@@ -233,4 +242,97 @@ export async function getCourseDetails(courseId: string) {
         },
         error: null,
     };
+}
+
+/**
+ * Generate a random access code
+ */
+function generateAccessCode(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+}
+
+/**
+ * Get course by access code
+ */
+export async function getCourseByAccessCode(accessCode: string) {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('courses')
+        .select(`
+            *,
+            lecturer:users!courses_lecturer_id_fkey(id, name, email)
+        `)
+        .eq('access_code', accessCode.toUpperCase())
+        .single();
+
+    if (error) {
+        if (error.code === 'PGRST116') {
+            return { success: false, error: 'Invalid access code', data: null };
+        }
+        return { success: false, error: error.message, data: null };
+    }
+
+    return { success: true, data, error: null };
+}
+
+/**
+ * Enroll student in course using access code
+ */
+export async function enrollWithAccessCode(accessCode: string) {
+    const user = await requireAuth();
+
+    // Only students can enroll
+    if (user.role !== 'student') {
+        return { success: false, error: 'Only students can enroll in courses', data: null };
+    }
+
+    // Get course by access code
+    const courseResult = await getCourseByAccessCode(accessCode);
+    if (!courseResult.success || !courseResult.data) {
+        return { success: false, error: 'Invalid access code', data: null };
+    }
+
+    const course = (courseResult as any).data;
+    const supabase = await createClient();
+
+    // Check if already enrolled
+    const enrollmentCheck = await supabase
+        .from('enrollments')
+        .select('id')
+        .eq('student_id', user.id)
+        .eq('course_id', course.id)
+        .single();
+
+    if (enrollmentCheck.data) {
+        return { success: false, error: 'You are already enrolled in this course', data: null };
+    }
+
+    // Create enrollment
+    const { data, error } = await supabase
+        .from('enrollments')
+        .insert({
+            student_id: user.id,
+            course_id: course.id,
+        } as any)
+        .select()
+        .single();
+
+    if (error) {
+        return { success: false, error: error.message, data: null };
+    }
+
+    await logAction(user.id, 'enrollment.created', 'enrollment', (data as any).id, {
+        course_id: course.id,
+        course_title: course.title,
+    });
+
+    revalidatePath('/dashboard');
+
+    return { success: true, data: { ...(data as any), course }, error: null };
 }

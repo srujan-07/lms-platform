@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BookOpen, Plus, Edit2, Trash2, Loader2, Shield } from 'lucide-react';
+import { BookOpen, Plus, Edit2, Trash2, Loader2, Key, Copy, Check } from 'lucide-react';
 import Link from 'next/link';
 
 interface Course {
@@ -9,6 +9,7 @@ interface Course {
     title: string;
     description: string;
     lecturer_id: string;
+    access_code: string;
     created_at: string;
     lecturer?: {
         id: string;
@@ -21,6 +22,7 @@ export default function AdminCoursesPage() {
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
     const [deleting, setDeleting] = useState<string | null>(null);
+    const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
     useEffect(() => {
         fetchCourses();
@@ -41,8 +43,18 @@ export default function AdminCoursesPage() {
         }
     };
 
+    const copyAccessCode = async (code: string) => {
+        try {
+            await navigator.clipboard.writeText(code);
+            setCopiedCode(code);
+            setTimeout(() => setCopiedCode(null), 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
+    };
+
     const handleDelete = async (courseId: string, title: string) => {
-        if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone.`)) {
+        if (!confirm(`Are you sure you want to delete "${title}"? This action cannot be undone and will remove all enrollments and materials.`)) {
             return;
         }
 
@@ -113,6 +125,7 @@ export default function AdminCoursesPage() {
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lecturer</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Access Code</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
@@ -131,13 +144,40 @@ export default function AdminCoursesPage() {
                                             <td className="px-6 py-4 text-sm text-gray-500">
                                                 {course.lecturer?.name || 'Unknown'}
                                             </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2">
+                                                    <code className="px-2 py-1 bg-primary-50 text-primary-700 rounded font-mono text-sm font-semibold">
+                                                        {course.access_code}
+                                                    </code>
+                                                    <button
+                                                        onClick={() => copyAccessCode(course.access_code)}
+                                                        className="p-1 hover:bg-gray-100 rounded transition-colors"
+                                                        title="Copy access code"
+                                                    >
+                                                        {copiedCode === course.access_code ? (
+                                                            <Check className="w-4 h-4 text-green-600" />
+                                                        ) : (
+                                                            <Copy className="w-4 h-4 text-gray-400" />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </td>
                                             <td className="px-6 py-4 text-sm text-gray-500">
                                                 {new Date(course.created_at).toLocaleDateString()}
                                             </td>
                                             <td className="px-6 py-4 text-right text-sm space-x-2">
                                                 <Link
+                                                    href={`/admin/courses/${course.id}/materials`}
+                                                    className="text-primary-600 hover:text-primary-700 inline-flex items-center gap-1"
+                                                    title="Manage materials"
+                                                >
+                                                    <BookOpen className="w-4 h-4" />
+                                                    Materials
+                                                </Link>
+                                                <Link
                                                     href={`/lecturer/courses/${course.id}`}
                                                     className="text-primary-600 hover:text-primary-700 inline-flex items-center gap-1"
+                                                    title="Edit course"
                                                 >
                                                     <Edit2 className="w-4 h-4" />
                                                     Edit
@@ -146,8 +186,13 @@ export default function AdminCoursesPage() {
                                                     onClick={() => handleDelete(course.id, course.title)}
                                                     disabled={deleting === course.id}
                                                     className="text-red-600 hover:text-red-700 inline-flex items-center gap-1 disabled:opacity-50"
+                                                    title="Delete course"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    {deleting === course.id ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : (
+                                                        <Trash2 className="w-4 h-4" />
+                                                    )}
                                                     Delete
                                                 </button>
                                             </td>

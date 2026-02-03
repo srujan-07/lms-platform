@@ -124,9 +124,16 @@ export default async function StudentDashboard() {
                                 <h4 className="text-lg font-semibold text-gray-900 mb-2">
                                     No Courses Yet
                                 </h4>
-                                <p className="text-gray-600">
-                                    You haven&apos;t been enrolled in any courses yet. Contact your administrator for enrollment.
+                                <p className="text-gray-600 mb-6">
+                                    You haven&apos;t enrolled in any courses yet. Use an access code to enroll in a course.
                                 </p>
+                                <Link
+                                    href="/dashboard/enroll"
+                                    className="btn btn-primary px-6 py-3 inline-flex items-center gap-2"
+                                >
+                                    <BookOpen className="w-4 h-4" />
+                                    Enroll in Course
+                                </Link>
                             </div>
                         ) : (
                             <div className="grid md:grid-cols-2 gap-6">
@@ -168,12 +175,12 @@ export default async function StudentDashboard() {
                             <h3 className="text-lg font-semibold mb-3">Quick Links</h3>
                             <div className="space-y-2">
                                 <Link
-                                    href="/dashboard"
+                                    href="/dashboard/enroll"
                                     className="block p-3 rounded-lg bg-white border hover:border-student-300 hover:shadow-sm transition-all"
                                 >
                                     <div className="flex items-center gap-2">
                                         <BookOpen className="w-4 h-4 text-student-600" />
-                                        <span className="text-sm font-medium">All Courses</span>
+                                        <span className="text-sm font-medium">Enroll in Course</span>
                                     </div>
                                 </Link>
                             </div>
