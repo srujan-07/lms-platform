@@ -38,6 +38,7 @@ export default function LecturerCoursePage() {
 
     useEffect(() => {
         fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [courseId]);
 
     const fetchData = async () => {

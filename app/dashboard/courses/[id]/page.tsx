@@ -35,6 +35,7 @@ export default function StudentCoursePage() {
 
     useEffect(() => {
         fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [courseId]);
 
     const fetchData = async () => {
@@ -93,7 +94,7 @@ export default function StudentCoursePage() {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-gray-600">Course not found or you don't have access</p>
+                    <p className="text-gray-600">Course not found or you don&apos;t have access</p>
                     <Link href="/dashboard" className="text-primary-600 hover:underline mt-2 inline-block">
                         ← Back to Dashboard
                     </Link>
@@ -167,7 +168,7 @@ export default function StudentCoursePage() {
                             <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                             <h4 className="text-lg font-semibold text-gray-900 mb-2">No Materials Yet</h4>
                             <p className="text-gray-600">
-                                Your instructor hasn't uploaded any materials yet. Check back later!
+                                Your instructor hasn&apos;t uploaded any materials yet. Check back later!
                             </p>
                         </div>
                     ) : (
