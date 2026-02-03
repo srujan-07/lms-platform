@@ -81,9 +81,9 @@ export async function createOrUpdateStudentProfile(input: StudentProfileInput) {
 
     if (existing) {
         // Update existing profile
-        // @ts-ignore - Supabase type inference issue
-        result = (await supabase
+        result = await supabase
             .from('student_profiles')
+            // @ts-expect-error - Supabase type inference issue with update
             .update({
                 class: input.class,
                 section: input.section,
@@ -91,7 +91,7 @@ export async function createOrUpdateStudentProfile(input: StudentProfileInput) {
             })
             .eq('user_id', user.id)
             .select()
-            .single()) as any;
+            .single();
     } else {
         // Create new profile
         result = await supabase
