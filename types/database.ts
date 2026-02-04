@@ -88,6 +88,11 @@ export interface AssignmentSubmission {
     student?: User;
 }
 
+// Helper types for database operations
+type AssignmentSubmissionRow = Omit<AssignmentSubmission, 'assignment' | 'student'>;
+type AssignmentSubmissionInsert = Omit<AssignmentSubmissionRow, 'id' | 'submitted_at'>;
+type AssignmentSubmissionUpdate = Partial<Omit<AssignmentSubmissionRow, 'id' | 'submitted_at' | 'assignment_id' | 'student_id'>>;
+
 export interface Database {
     public: {
         Tables: {
@@ -127,9 +132,9 @@ export interface Database {
                 Update: Partial<Omit<Assignment, 'id' | 'created_at'>>;
             };
             assignment_submissions: {
-                Row: AssignmentSubmission;
-                Insert: Omit<AssignmentSubmission, 'id' | 'submitted_at' | 'assignment' | 'student'>;
-                Update: Partial<Omit<AssignmentSubmission, 'id' | 'submitted_at' | 'assignment' | 'student'>>;
+                Row: AssignmentSubmissionRow;
+                Insert: AssignmentSubmissionInsert;
+                Update: AssignmentSubmissionUpdate;
             };
         };
     };
