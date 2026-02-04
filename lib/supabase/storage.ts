@@ -64,6 +64,37 @@ export async function uploadPDF(
 
         if (error) {
             console.error('Upload error:', error);
+
+            // If bucket doesn't exist, try to create it and retry upload
+            // The error message from Supabase storage for missing bucket can vary, so we'll check broadly
+            if (error.message.includes('Bucket not found') || error.message.includes('The resource was not found')) {
+                console.log('Bucket not found, attempting to create...');
+                const { error: createError } = await supabase.storage.createBucket(BUCKET_NAME, {
+                    public: false,
+                    fileSizeLimit: MAX_FILE_SIZE,
+                    allowedMimeTypes: ALLOWED_MIME_TYPES
+                });
+
+                if (createError) {
+                    console.error('Failed to create bucket:', createError);
+                    return { success: false, error: 'Storage configuration error' };
+                }
+
+                // Retry upload
+                const { data: retryData, error: retryError } = await supabase.storage
+                    .from(BUCKET_NAME)
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: false,
+                    });
+
+                if (retryError) {
+                    return { success: false, error: retryError.message };
+                }
+
+                return { success: true, filePath: retryData.path };
+            }
+
             return {
                 success: false,
                 error: error.message,

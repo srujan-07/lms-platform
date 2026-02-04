@@ -105,7 +105,7 @@ export async function createCourse(
             title,
             description,
             lecturer_id: finalLecturerId,
-            access_code: finalAccessCode,
+            access_code: finalAccessCode.toUpperCase(),
         } as any)
         .select()
         .single();
@@ -253,7 +253,7 @@ function generateAccessCode(): string {
     for (let i = 0; i < 8; i++) {
         code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    return code;
+    return code.toUpperCase();
 }
 
 /**
@@ -270,6 +270,22 @@ export async function getCourseByAccessCode(accessCode: string) {
         `)
         .eq('access_code', accessCode.toUpperCase())
         .single();
+
+    // Fallback: Try with raw access code (for legacy mixed-case codes)
+    if (error && error.code === 'PGRST116') {
+        const { data: legacyData, error: legacyError } = await supabase
+            .from('courses')
+            .select(`
+                *,
+                lecturer:users!courses_lecturer_id_fkey(id, name, email)
+            `)
+            .eq('access_code', accessCode)
+            .single();
+
+        if (!legacyError && legacyData) {
+            return { success: true, data: legacyData, error: null };
+        }
+    }
 
     if (error) {
         if (error.code === 'PGRST116') {
