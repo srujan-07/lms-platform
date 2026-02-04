@@ -91,51 +91,75 @@ export interface AssignmentSubmission {
 // Helper types for database operations
 type AssignmentSubmissionRow = Omit<AssignmentSubmission, 'assignment' | 'student'>;
 type AssignmentSubmissionInsert = Omit<AssignmentSubmissionRow, 'id' | 'submitted_at'>;
-type AssignmentSubmissionUpdate = Partial<Omit<AssignmentSubmissionRow, 'id' | 'submitted_at' | 'assignment_id' | 'student_id'>>;
+type AssignmentSubmissionUpdate = {
+    file_path?: string;
+    grade?: number | null;
+    feedback?: string | null;
+};
 
-export interface Database {
+export type Database = {
     public: {
         Tables: {
             users: {
                 Row: User;
                 Insert: Omit<User, 'created_at' | 'updated_at'>;
                 Update: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>>;
+                Relationships: [];
             };
             courses: {
                 Row: Course;
                 Insert: Omit<Course, 'id' | 'created_at' | 'updated_at'>;
                 Update: Partial<Omit<Course, 'id' | 'created_at' | 'updated_at'>>;
+                Relationships: [];
             };
             enrollments: {
                 Row: Enrollment;
                 Insert: Omit<Enrollment, 'id' | 'enrolled_at'>;
                 Update: Partial<Omit<Enrollment, 'id' | 'enrolled_at'>>;
+                Relationships: [];
             };
             lecture_notes: {
                 Row: LectureNote;
                 Insert: Omit<LectureNote, 'id' | 'created_at' | 'updated_at'>;
                 Update: Partial<Omit<LectureNote, 'id' | 'created_at' | 'updated_at'>>;
+                Relationships: [];
             };
             audit_logs: {
                 Row: AuditLog;
                 Insert: Omit<AuditLog, 'id' | 'created_at'>;
                 Update: never;
+                Relationships: [];
             };
             course_hours: {
                 Row: CourseHour;
                 Insert: Omit<CourseHour, 'id' | 'created_at'>;
                 Update: Partial<Omit<CourseHour, 'id' | 'created_at'>>;
+                Relationships: [];
             };
             assignments: {
                 Row: Assignment;
                 Insert: Omit<Assignment, 'id' | 'created_at'>;
                 Update: Partial<Omit<Assignment, 'id' | 'created_at'>>;
+                Relationships: [];
             };
             assignment_submissions: {
                 Row: AssignmentSubmissionRow;
                 Insert: AssignmentSubmissionInsert;
                 Update: AssignmentSubmissionUpdate;
+                Relationships: [];
             };
         };
+        Views: {
+            [_ in never]: never;
+        };
+        Functions: {
+            [_ in never]: never;
+        };
+        Enums: {
+            [_ in never]: never;
+        };
+        CompositeTypes: {
+            [_ in never]: never;
+        };
     };
-}
+};

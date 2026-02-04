@@ -7,7 +7,7 @@ export async function GET(
     { params }: { params: { assignmentId: string } }
 ) {
     try {
-        const supabase = createClient();
+        const supabase: any = createClient();
         const assignmentId = params.assignmentId;
         const user = await stackServerApp.getUser();
 

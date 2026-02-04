@@ -15,7 +15,7 @@ export async function POST(
     { params }: { params: { hourId: string } }
 ) {
     try {
-        const supabase = await createClient();
+        const supabase: any = await createClient();
         const hourId = params.hourId;
         const user = await stackServerApp.getUser();
 

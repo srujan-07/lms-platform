@@ -15,7 +15,7 @@ export async function POST(
     { params }: { params: { submissionId: string } }
 ) {
     try {
-        const supabase: SupabaseClient<Database> = await createClient();
+        const supabase: any = await createClient();
         const submissionId = params.submissionId;
         const user = await stackServerApp.getUser();
 

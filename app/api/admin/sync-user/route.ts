@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Sync to Supabase with specified role
-        const supabase = createAdminClient();
+        const supabase: any = createAdminClient();
 
         const { data, error } = await supabase
             .from('users')

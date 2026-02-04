@@ -40,7 +40,7 @@ export async function POST(
             );
         }
 
-        const supabase = await createClient();
+        const supabase: any = await createClient();
 
         // Check if submission already exists, update if it does (policy allows insert, but we simplified to insert/update logic locally)
         const { data: existing } = await supabase
@@ -53,8 +53,8 @@ export async function POST(
         let result;
         if (existing) {
             // Update
-            result = await supabase
-                .from('assignment_submissions')
+            const query: any = supabase.from('assignment_submissions');
+            result = await query
                 .update({
                     file_path: uploadResult.filePath
                 })
@@ -63,8 +63,8 @@ export async function POST(
                 .single();
         } else {
             // Insert
-            result = await supabase
-                .from('assignment_submissions')
+            const query: any = supabase.from('assignment_submissions');
+            result = await query
                 .insert({
                     assignment_id: assignmentId,
                     student_id: user.id,
