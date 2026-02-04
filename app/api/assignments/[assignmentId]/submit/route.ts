@@ -56,8 +56,7 @@ export async function POST(
             result = await supabase
                 .from('assignment_submissions')
                 .update({
-                    file_path: uploadResult.filePath,
-                    submitted_at: new Date().toISOString()
+                    file_path: uploadResult.filePath
                 })
                 .eq('id', existing.id)
                 .select()
