@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const userRole = user.serverMetadata?.role;
+        const userRole = user.serverMetadata?.role || 'student';
 
         // Check if this is admin enrollment or student self-enrollment
         if (body.accessCode) {
