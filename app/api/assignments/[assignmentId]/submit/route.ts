@@ -40,7 +40,7 @@ export async function POST(
             );
         }
 
-        const supabase = createClient();
+        const supabase = await createClient();
 
         // Check if submission already exists, update if it does (policy allows insert, but we simplified to insert/update logic locally)
         const { data: existing } = await supabase

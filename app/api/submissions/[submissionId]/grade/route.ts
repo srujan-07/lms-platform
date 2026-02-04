@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { Database } from '@/types/database';
 import { stackServerApp } from '@/lib/auth/stackauth';
 import { z } from 'zod';
 
@@ -13,7 +15,7 @@ export async function POST(
     { params }: { params: { submissionId: string } }
 ) {
     try {
-        const supabase = createClient();
+        const supabase: SupabaseClient<Database> = await createClient();
         const submissionId = params.submissionId;
         const user = await stackServerApp.getUser();
 

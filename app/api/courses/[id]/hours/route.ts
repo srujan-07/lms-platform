@@ -13,7 +13,7 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     try {
-        const supabase = createClient();
+        const supabase = await createClient();
         const courseId = params.id;
 
         // Check authentication
@@ -45,7 +45,7 @@ export async function POST(
     { params }: { params: { id: string } }
 ) {
     try {
-        const supabase = createClient();
+        const supabase = await createClient();
         const courseId = params.id;
         const user = await stackServerApp.getUser();
 
