@@ -46,23 +46,23 @@ export default async function StudentDashboard() {
     const signOutUrl = '/api/auth/signout';
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-student-50 via-white to-primary-50">
+        <div className="min-h-screen bg-brand-light">
             {/* Navigation */}
-            <nav className="bg-white shadow-sm border-b sticky top-0 z-10">
+            <nav className="bg-brand-light/80 backdrop-blur-md shadow-sm border-b border-brand-dark/5 sticky top-0 z-10 transition-all">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
-                            <BookOpen className="w-6 h-6 text-student-600" />
-                            <h1 className="text-xl font-bold">Student Dashboard</h1>
+                            <BookOpen className="w-6 h-6 text-brand-orange" />
+                            <h1 className="text-xl font-bold text-brand-dark">Student Dashboard</h1>
                         </div>
                         <div className="flex items-center gap-4">
                             <div className="text-right">
-                                <p className="text-sm font-medium">{user.name}</p>
+                                <p className="text-sm font-medium text-brand-dark">{user.name}</p>
                                 <RoleBadge role={user.role} />
                             </div>
                             <a
                                 href={signOutUrl}
-                                className="btn btn-secondary px-4 py-2 flex items-center gap-2"
+                                className="btn btn-secondary px-4 py-2 flex items-center gap-2 hover:bg-red-50 hover:text-red-600 transition-colors"
                             >
                                 <LogOut className="w-4 h-4" />
                                 Sign Out
@@ -76,10 +76,10 @@ export default async function StudentDashboard() {
             <main className="container mx-auto px-4 py-8">
                 {/* Welcome Section */}
                 <div className="mb-8">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                    <h2 className="text-3xl font-bold text-brand-dark mb-2">
                         Welcome back, {user.name}! 👋
                     </h2>
-                    <p className="text-gray-600">
+                    <p className="text-brand-dark/70">
                         Continue your learning journey and explore your courses
                     </p>
                 </div>
@@ -110,21 +110,21 @@ export default async function StudentDashboard() {
                     {/* Main Content - Courses */}
                     <div className="lg:col-span-2">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-2xl font-bold">My Courses</h3>
+                            <h3 className="text-2xl font-bold text-brand-dark">My Courses</h3>
                             {courses.length > 0 && (
-                                <div className="text-sm text-gray-500">
+                                <div className="text-sm text-brand-dark/60">
                                     {totalCourses} {totalCourses === 1 ? 'course' : 'courses'}
                                 </div>
                             )}
                         </div>
 
                         {courses.length === 0 ? (
-                            <div className="card p-12 text-center">
-                                <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                                <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                            <div className="card p-12 text-center bg-brand-beige/50 border-brand-dark/5">
+                                <BookOpen className="w-16 h-16 text-brand-dark/20 mx-auto mb-4" />
+                                <h4 className="text-lg font-semibold text-brand-dark mb-2">
                                     No Courses Yet
                                 </h4>
-                                <p className="text-gray-600 mb-6">
+                                <p className="text-brand-dark/60 mb-6">
                                     You haven&apos;t enrolled in any courses yet. Use an access code to enroll in a course.
                                 </p>
                                 <Link
@@ -158,13 +158,13 @@ export default async function StudentDashboard() {
 
                     {/* Sidebar - Recent Activity */}
                     <div className="lg:col-span-1">
-                        <h3 className="text-xl font-bold mb-4">Recent Activity</h3>
+                        <h3 className="text-xl font-bold mb-4 text-brand-dark">Recent Activity</h3>
                         {recentActivities.length > 0 ? (
                             <ActivityFeed activities={recentActivities} maxItems={5} />
                         ) : (
-                            <div className="card p-8 text-center">
-                                <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                                <p className="text-sm text-gray-500">
+                            <div className="card p-8 text-center bg-brand-beige/50">
+                                <Clock className="w-12 h-12 text-brand-dark/20 mx-auto mb-3" />
+                                <p className="text-sm text-brand-dark/50">
                                     No recent activity
                                 </p>
                             </div>
@@ -172,15 +172,15 @@ export default async function StudentDashboard() {
 
                         {/* Quick Links */}
                         <div className="mt-6">
-                            <h3 className="text-lg font-semibold mb-3">Quick Links</h3>
+                            <h3 className="text-lg font-semibold mb-3 text-brand-dark">Quick Links</h3>
                             <div className="space-y-2">
                                 <Link
                                     href="/dashboard/enroll"
-                                    className="block p-3 rounded-lg bg-white border hover:border-student-300 hover:shadow-sm transition-all"
+                                    className="block p-3 rounded-lg bg-white border border-brand-dark/5 hover:border-brand-orange/30 hover:shadow-md transition-all group"
                                 >
                                     <div className="flex items-center gap-2">
-                                        <BookOpen className="w-4 h-4 text-student-600" />
-                                        <span className="text-sm font-medium">Enroll in Course</span>
+                                        <BookOpen className="w-4 h-4 text-brand-dark group-hover:text-brand-orange transition-colors" />
+                                        <span className="text-sm font-medium text-brand-dark">Enroll in Course</span>
                                     </div>
                                 </Link>
                             </div>

@@ -79,14 +79,14 @@ export default function AdminUsersPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-admin-50 via-white to-purple-50">
+        <div className="min-h-screen bg-brand-light">
             {/* Navigation */}
-            <nav className="bg-white shadow-sm border-b sticky top-0 z-10">
+            <nav className="bg-brand-light/80 backdrop-blur-md shadow-sm border-b border-brand-dark/5 sticky top-0 z-10 transition-all">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
-                            <Shield className="w-6 h-6 text-admin-600" />
-                            <h1 className="text-xl font-bold">User Management</h1>
+                            <Shield className="w-6 h-6 text-brand-orange" />
+                            <h1 className="text-xl font-bold text-brand-dark">User Management</h1>
                         </div>
                         <Link href="/admin/dashboard" className="btn btn-secondary px-4 py-2">
                             ← Back to Dashboard
@@ -100,34 +100,34 @@ export default function AdminUsersPage() {
                 <div className="grid md:grid-cols-3 gap-6 mb-8">
                     <div className="card p-6">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-student-100 rounded-lg flex items-center justify-center">
-                                <Users className="w-6 h-6 text-student-600" />
+                            <div className="w-12 h-12 bg-brand-light rounded-lg flex items-center justify-center border border-brand-dark/10">
+                                <Users className="w-6 h-6 text-brand-dark" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold">{roleStats.students}</p>
-                                <p className="text-sm text-gray-600">Students</p>
+                                <p className="text-2xl font-bold text-brand-dark">{roleStats.students}</p>
+                                <p className="text-sm text-brand-dark/70">Students</p>
                             </div>
                         </div>
                     </div>
                     <div className="card p-6">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-lecturer-100 rounded-lg flex items-center justify-center">
-                                <Users className="w-6 h-6 text-lecturer-600" />
+                            <div className="w-12 h-12 bg-brand-orange/10 rounded-lg flex items-center justify-center">
+                                <Users className="w-6 h-6 text-brand-orange" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold">{roleStats.lecturers}</p>
-                                <p className="text-sm text-gray-600">Lecturers</p>
+                                <p className="text-2xl font-bold text-brand-dark">{roleStats.lecturers}</p>
+                                <p className="text-sm text-brand-dark/70">Lecturers</p>
                             </div>
                         </div>
                     </div>
                     <div className="card p-6">
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-admin-100 rounded-lg flex items-center justify-center">
-                                <Shield className="w-6 h-6 text-admin-600" />
+                            <div className="w-12 h-12 bg-brand-dark/10 rounded-lg flex items-center justify-center">
+                                <Shield className="w-6 h-6 text-brand-dark" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold">{roleStats.admins}</p>
-                                <p className="text-sm text-gray-600">Admins</p>
+                                <p className="text-2xl font-bold text-brand-dark">{roleStats.admins}</p>
+                                <p className="text-sm text-brand-dark/70">Admins</p>
                             </div>
                         </div>
                     </div>
@@ -136,7 +136,7 @@ export default function AdminUsersPage() {
                 {/* Search */}
                 <div className="card p-6 mb-6">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-brand-dark/40" />
                         <input
                             type="text"
                             placeholder="Search users by name or email..."
@@ -151,44 +151,44 @@ export default function AdminUsersPage() {
                 <div className="card overflow-hidden">
                     {loading ? (
                         <div className="p-12 text-center">
-                            <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-4" />
-                            <p className="text-gray-600">Loading users...</p>
+                            <Loader2 className="w-8 h-8 text-brand-orange animate-spin mx-auto mb-4" />
+                            <p className="text-brand-dark/60">Loading users...</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead className="bg-gray-50 border-b">
+                                <thead className="bg-brand-light/50 border-b border-brand-dark/5">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase tracking-wider">
                                             Name
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase tracking-wider">
                                             Email
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase tracking-wider">
                                             Role
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase tracking-wider">
                                             Joined
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase tracking-wider">
                                             Actions
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="bg-white divide-y divide-brand-dark/5">
                                     {filteredUsers.map((user) => (
-                                        <tr key={user.id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        <tr key={user.id} className="hover:bg-brand-light/30 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-dark">
                                                 {user.name}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-dark/70">
                                                 {user.email}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <RoleBadge role={user.role} />
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-brand-dark/70">
                                                 {new Date(user.created_at).toLocaleDateString()}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -212,8 +212,8 @@ export default function AdminUsersPage() {
 
                     {!loading && filteredUsers.length === 0 && (
                         <div className="p-12 text-center">
-                            <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                            <p className="text-gray-600">No users found</p>
+                            <Users className="w-16 h-16 text-brand-dark/20 mx-auto mb-4" />
+                            <p className="text-brand-dark/60">No users found</p>
                         </div>
                     )}
                 </div>

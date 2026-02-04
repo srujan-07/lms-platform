@@ -134,13 +134,13 @@ export default function CourseMaterialsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-admin-50 via-white to-purple-50">
-            <nav className="bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="min-h-screen bg-brand-light">
+            <nav className="bg-brand-light/80 backdrop-blur-md shadow-sm border-b border-brand-dark/5 sticky top-0 z-10 transition-all">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
-                            <FileText className="w-6 h-6 text-admin-600" />
-                            <h1 className="text-xl font-bold">Course Materials</h1>
+                            <FileText className="w-6 h-6 text-brand-orange" />
+                            <h1 className="text-xl font-bold text-brand-dark">Course Materials</h1>
                         </div>
                         <div className="flex items-center gap-3">
                             <button
@@ -165,11 +165,11 @@ export default function CourseMaterialsPage() {
             <main className="container mx-auto px-4 py-8 max-w-4xl">
                 {/* Upload Form */}
                 {showUploadForm && (
-                    <div className="card p-6 mb-6">
-                        <h2 className="text-lg font-bold mb-4">Upload New Material</h2>
+                    <div className="card p-6 mb-6 animate-slide-in">
+                        <h2 className="text-lg font-bold mb-4 text-brand-dark">Upload New Material</h2>
                         <form onSubmit={handleUpload} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-brand-dark/80 mb-2">
                                     Title *
                                 </label>
                                 <input
@@ -184,7 +184,7 @@ export default function CourseMaterialsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-brand-dark/80 mb-2">
                                     Description
                                 </label>
                                 <textarea
@@ -198,7 +198,7 @@ export default function CourseMaterialsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <label className="block text-sm font-medium text-brand-dark/80 mb-2">
                                     PDF File * (Max 10MB)
                                 </label>
                                 <input
@@ -206,10 +206,10 @@ export default function CourseMaterialsPage() {
                                     accept="application/pdf"
                                     required
                                     onChange={handleFileChange}
-                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                                    className="block w-full text-sm text-brand-dark/60 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-orange/10 file:text-brand-orange hover:file:bg-brand-orange/20 cursor-pointer"
                                 />
                                 {uploadForm.file && (
-                                    <p className="text-sm text-gray-600 mt-2">
+                                    <p className="text-sm text-brand-dark/60 mt-2">
                                         Selected: {uploadForm.file.name} ({formatFileSize(uploadForm.file.size)})
                                     </p>
                                 )}
@@ -259,14 +259,14 @@ export default function CourseMaterialsPage() {
                 <div className="card overflow-hidden">
                     {loading ? (
                         <div className="p-12 text-center">
-                            <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-4" />
-                            <p className="text-gray-600">Loading materials...</p>
+                            <Loader2 className="w-8 h-8 text-brand-orange animate-spin mx-auto mb-4" />
+                            <p className="text-brand-dark/60">Loading materials...</p>
                         </div>
                     ) : materials.length === 0 ? (
                         <div className="p-12 text-center">
-                            <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Materials Yet</h3>
-                            <p className="text-gray-600 mb-4">Upload your first course material to get started.</p>
+                            <FileText className="w-16 h-16 text-brand-dark/20 mx-auto mb-4" />
+                            <h3 className="text-lg font-semibold text-brand-dark mb-2">No Materials Yet</h3>
+                            <p className="text-brand-dark/60 mb-4">Upload your first course material to get started.</p>
                             <button
                                 onClick={() => setShowUploadForm(true)}
                                 className="btn btn-primary px-6 py-2 inline-flex items-center gap-2"
@@ -276,21 +276,21 @@ export default function CourseMaterialsPage() {
                             </button>
                         </div>
                     ) : (
-                        <div className="divide-y divide-gray-200">
+                        <div className="divide-y divide-brand-dark/5">
                             {materials.map((material) => (
-                                <div key={material.id} className="p-6 hover:bg-gray-50 transition-colors">
+                                <div key={material.id} className="p-6 hover:bg-brand-light/30 transition-colors">
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <FileText className="w-5 h-5 text-red-600" />
-                                                <h3 className="text-lg font-semibold text-gray-900">
+                                                <FileText className="w-5 h-5 text-brand-orange" />
+                                                <h3 className="text-lg font-semibold text-brand-dark">
                                                     {material.title}
                                                 </h3>
                                             </div>
                                             {material.description && (
-                                                <p className="text-sm text-gray-600 mb-2">{material.description}</p>
+                                                <p className="text-sm text-brand-dark/70 mb-2">{material.description}</p>
                                             )}
-                                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                                            <div className="flex items-center gap-4 text-xs text-brand-dark/50">
                                                 <span>{formatFileSize(material.file_size)}</span>
                                                 <span>•</span>
                                                 <span>{new Date(material.created_at).toLocaleDateString()}</span>
@@ -300,7 +300,7 @@ export default function CourseMaterialsPage() {
                                             <button
                                                 onClick={() => handleDelete(material.id, material.title)}
                                                 disabled={deleting === material.id}
-                                                className="text-red-600 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                                                className="text-red-500 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
                                                 title="Delete material"
                                             >
                                                 <Trash2 className="w-4 h-4" />

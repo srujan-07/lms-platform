@@ -7,9 +7,9 @@ interface RoleBadgeProps {
 
 export function RoleBadge({ role, className }: RoleBadgeProps) {
     const styles = {
-        student: 'bg-student-light text-student-dark border-student',
-        lecturer: 'bg-lecturer-light text-lecturer-dark border-lecturer',
-        admin: 'bg-admin-light text-admin-dark border-admin',
+        student: 'bg-brand-light text-brand-dark border-brand-dark/10',
+        lecturer: 'bg-brand-orange/10 text-brand-orange border-brand-orange/20',
+        admin: 'bg-brand-dark text-brand-beige border-transparent',
     };
 
     return (

@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { BookOpen, Upload, FileText, Download, Edit2, Trash2, Loader2, X, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useDropzone } from 'react-dropzone';
+import CourseCurriculum from '@/components/courses/CourseCurriculum';
 
 interface Course {
     id: string;
@@ -167,13 +168,13 @@ export default function LecturerCoursePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-lecturer-50 via-white to-orange-50">
-            <nav className="bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="min-h-screen bg-brand-light">
+            <nav className="bg-brand-light/80 backdrop-blur-md shadow-sm border-b border-brand-dark/5 sticky top-0 z-10">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
-                            <BookOpen className="w-6 h-6 text-lecturer-600" />
-                            <h1 className="text-xl font-bold">{course.title}</h1>
+                            <BookOpen className="w-6 h-6 text-brand-orange" />
+                            <h1 className="text-xl font-bold text-brand-dark">{course.title}</h1>
                         </div>
                         <div className="flex items-center gap-3">
                             <button
@@ -194,11 +195,11 @@ export default function LecturerCoursePage() {
             <main className="container mx-auto px-4 py-8">
                 {/* Course Info */}
                 <div className="card p-6 mb-8">
-                    <h2 className="text-2xl font-bold mb-2">{course.title}</h2>
+                    <h2 className="text-2xl font-bold mb-2 text-brand-dark">{course.title}</h2>
                     {course.description && (
-                        <p className="text-gray-600 mb-4">{course.description}</p>
+                        <p className="text-brand-dark/70 mb-4">{course.description}</p>
                     )}
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-sm text-brand-dark/50">
                         <span>{course.enrollment_count} students enrolled</span>
                         <span>•</span>
                         <span>{notes.length} materials uploaded</span>
@@ -207,15 +208,15 @@ export default function LecturerCoursePage() {
 
                 {/* Lecture Notes */}
                 <div className="card">
-                    <div className="p-6 border-b">
-                        <h3 className="text-xl font-bold">Lecture Materials</h3>
+                    <div className="p-6 border-b border-brand-dark/5 bg-brand-light/50">
+                        <h3 className="text-xl font-bold text-brand-dark">Lecture Materials</h3>
                     </div>
 
                     {notes.length === 0 ? (
                         <div className="p-12 text-center">
-                            <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                            <h4 className="text-lg font-semibold text-gray-900 mb-2">No Materials Yet</h4>
-                            <p className="text-gray-600 mb-4">Upload lecture notes and materials for your students.</p>
+                            <FileText className="w-16 h-16 text-brand-dark/20 mx-auto mb-4" />
+                            <h4 className="text-lg font-semibold text-brand-dark mb-2">No Materials Yet</h4>
+                            <p className="text-brand-dark/60 mb-4">Upload lecture notes and materials for your students.</p>
                             <button
                                 onClick={() => setShowUploadModal(true)}
                                 className="btn btn-primary px-6 py-2 inline-flex items-center gap-2"
@@ -225,16 +226,16 @@ export default function LecturerCoursePage() {
                             </button>
                         </div>
                     ) : (
-                        <div className="divide-y">
+                        <div className="divide-y divide-brand-dark/5">
                             {notes.map((note) => (
-                                <div key={note.id} className="p-6 hover:bg-gray-50 transition-colors">
+                                <div key={note.id} className="p-6 hover:bg-brand-light/50 transition-colors">
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
-                                            <h4 className="font-semibold text-gray-900 mb-1">{note.title}</h4>
+                                            <h4 className="font-semibold text-brand-dark mb-1">{note.title}</h4>
                                             {note.description && (
-                                                <p className="text-sm text-gray-600 mb-2">{note.description}</p>
+                                                <p className="text-sm text-brand-dark/70 mb-2">{note.description}</p>
                                             )}
-                                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                                            <div className="flex items-center gap-3 text-xs text-brand-dark/50">
                                                 <span>{formatFileSize(note.file_size)}</span>
                                                 <span>•</span>
                                                 <span>Uploaded {new Date(note.created_at).toLocaleDateString()}</span>
@@ -245,7 +246,7 @@ export default function LecturerCoursePage() {
                                         <div className="flex items-center gap-2 ml-4">
                                             <button
                                                 onClick={() => handleDownload(note.id)}
-                                                className="text-primary-600 hover:text-primary-700 p-2"
+                                                className="text-brand-orange hover:text-brand-orange/80 p-2"
                                                 title="Download"
                                             >
                                                 <Download className="w-4 h-4" />

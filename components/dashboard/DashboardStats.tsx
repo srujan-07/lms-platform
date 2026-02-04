@@ -15,34 +15,34 @@ interface DashboardStatsProps {
 
 const colorSchemes = {
     primary: {
-        bg: 'bg-primary-100',
-        icon: 'text-primary-600',
-        trend: 'text-primary-600',
+        bg: 'bg-brand-orange/10',
+        icon: 'text-brand-orange',
+        trend: 'text-brand-orange',
     },
     student: {
-        bg: 'bg-student-100',
-        icon: 'text-student-600',
-        trend: 'text-student-600',
+        bg: 'bg-brand-light',
+        icon: 'text-brand-dark',
+        trend: 'text-brand-dark',
     },
     lecturer: {
-        bg: 'bg-lecturer-100',
-        icon: 'text-lecturer-600',
-        trend: 'text-lecturer-600',
+        bg: 'bg-brand-dark/5',
+        icon: 'text-brand-dark',
+        trend: 'text-brand-dark',
     },
     admin: {
-        bg: 'bg-admin-100',
-        icon: 'text-admin-600',
-        trend: 'text-admin-600',
+        bg: 'bg-brand-dark',
+        icon: 'text-brand-beige',
+        trend: 'text-brand-dark',
     },
     success: {
-        bg: 'bg-green-100',
-        icon: 'text-green-600',
-        trend: 'text-green-600',
+        bg: 'bg-green-50', // Keep semantic but soft
+        icon: 'text-green-700',
+        trend: 'text-green-700',
     },
     warning: {
-        bg: 'bg-yellow-100',
-        icon: 'text-yellow-600',
-        trend: 'text-yellow-600',
+        bg: 'bg-yellow-50',
+        icon: 'text-yellow-700',
+        trend: 'text-yellow-700',
     },
 };
 

@@ -71,13 +71,13 @@ export default function StudentCourseMaterialsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-student-50 via-white to-primary-50">
-            <nav className="bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="min-h-screen bg-brand-light">
+            <nav className="bg-brand-light/80 backdrop-blur-md shadow-sm border-b border-brand-dark/5 sticky top-0 z-10 transition-all">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
-                            <FileText className="w-6 h-6 text-student-600" />
-                            <h1 className="text-xl font-bold">Course Materials</h1>
+                            <FileText className="w-6 h-6 text-brand-orange" />
+                            <h1 className="text-xl font-bold text-brand-dark">Course Materials</h1>
                         </div>
                         <Link
                             href="/dashboard"
@@ -94,39 +94,39 @@ export default function StudentCourseMaterialsPage() {
                 <div className="card overflow-hidden">
                     {loading ? (
                         <div className="p-12 text-center">
-                            <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-4" />
-                            <p className="text-gray-600">Loading materials...</p>
+                            <Loader2 className="w-8 h-8 text-brand-orange animate-spin mx-auto mb-4" />
+                            <p className="text-brand-dark/60">Loading materials...</p>
                         </div>
                     ) : error ? (
                         <div className="p-12 text-center">
-                            <Lock className="w-16 h-16 text-red-300 mx-auto mb-4" />
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">Access Denied</h3>
-                            <p className="text-gray-600">{error}</p>
+                            <Lock className="w-16 h-16 text-red-400 mx-auto mb-4" />
+                            <h3 className="text-lg font-semibold text-brand-dark mb-2">Access Denied</h3>
+                            <p className="text-brand-dark/60">{error}</p>
                         </div>
                     ) : materials.length === 0 ? (
                         <div className="p-12 text-center">
-                            <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Materials Available</h3>
-                            <p className="text-gray-600">
+                            <FileText className="w-16 h-16 text-brand-dark/20 mx-auto mb-4" />
+                            <h3 className="text-lg font-semibold text-brand-dark mb-2">No Materials Available</h3>
+                            <p className="text-brand-dark/60">
                                 Your instructor hasn&apos;t uploaded any materials yet.
                             </p>
                         </div>
                     ) : (
-                        <div className="divide-y divide-gray-200">
+                        <div className="divide-y divide-brand-dark/5">
                             {materials.map((material) => (
-                                <div key={material.id} className="p-6 hover:bg-gray-50 transition-colors">
+                                <div key={material.id} className="p-6 hover:bg-brand-light/30 transition-colors">
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <FileText className="w-5 h-5 text-red-600" />
-                                                <h3 className="text-lg font-semibold text-gray-900">
+                                                <FileText className="w-5 h-5 text-brand-orange" />
+                                                <h3 className="text-lg font-semibold text-brand-dark">
                                                     {material.title}
                                                 </h3>
                                             </div>
                                             {material.description && (
-                                                <p className="text-sm text-gray-600 mb-2">{material.description}</p>
+                                                <p className="text-sm text-brand-dark/70 mb-2">{material.description}</p>
                                             )}
-                                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                                            <div className="flex items-center gap-4 text-xs text-brand-dark/50">
                                                 <span>{formatFileSize(material.file_size)}</span>
                                                 <span>•</span>
                                                 <span>
@@ -160,8 +160,8 @@ export default function StudentCourseMaterialsPage() {
 
                 {/* Info Box */}
                 {!loading && !error && materials.length > 0 && (
-                    <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <p className="text-sm text-blue-800">
+                    <div className="mt-6 bg-brand-orange/5 border border-brand-orange/20 rounded-lg p-4">
+                        <p className="text-sm text-brand-dark/80">
                             <strong>Note:</strong> Download links are valid for 1 hour. If a link expires, simply click the download button again to generate a new one.
                         </p>
                     </div>

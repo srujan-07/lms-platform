@@ -55,6 +55,39 @@ export interface AuditLog {
     user?: User;
 }
 
+export interface CourseHour {
+    id: string;
+    course_id: string;
+    title: string;
+    content: string | null;
+    order_index: number;
+    created_at: string;
+    course?: Course;
+}
+
+export interface Assignment {
+    id: string;
+    hour_id: string;
+    title: string;
+    description: string | null;
+    points: number;
+    due_date: string | null;
+    created_at: string;
+    hour?: CourseHour;
+}
+
+export interface AssignmentSubmission {
+    id: string;
+    assignment_id: string;
+    student_id: string;
+    file_path: string;
+    grade: number | null;
+    feedback: string | null;
+    submitted_at: string;
+    assignment?: Assignment;
+    student?: User;
+}
+
 export interface Database {
     public: {
         Tables: {
@@ -82,6 +115,21 @@ export interface Database {
                 Row: AuditLog;
                 Insert: Omit<AuditLog, 'id' | 'created_at'>;
                 Update: never;
+            };
+            course_hours: {
+                Row: CourseHour;
+                Insert: Omit<CourseHour, 'id' | 'created_at'>;
+                Update: Partial<Omit<CourseHour, 'id' | 'created_at'>>;
+            };
+            assignments: {
+                Row: Assignment;
+                Insert: Omit<Assignment, 'id' | 'created_at'>;
+                Update: Partial<Omit<Assignment, 'id' | 'created_at'>>;
+            };
+            assignment_submissions: {
+                Row: AssignmentSubmission;
+                Insert: Omit<AssignmentSubmission, 'id' | 'submitted_at'>;
+                Update: Partial<Omit<AssignmentSubmission, 'id' | 'submitted_at'>>;
             };
         };
     };

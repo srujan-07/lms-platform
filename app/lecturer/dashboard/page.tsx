@@ -33,14 +33,14 @@ export default async function LecturerDashboard() {
     const signOutUrl = '/api/auth/signout';
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-lecturer-50 via-white to-orange-50">
+        <div className="min-h-screen bg-brand-light">
             {/* Navigation */}
-            <nav className="bg-white shadow-sm border-b sticky top-0 z-10">
+            <nav className="bg-brand-light/80 backdrop-blur-md shadow-sm border-b border-brand-dark/5 sticky top-0 z-10 transition-all">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
-                            <Upload className="w-6 h-6 text-lecturer-600" />
-                            <h1 className="text-xl font-bold">Lecturer Dashboard</h1>
+                            <Upload className="w-6 h-6 text-brand-orange" />
+                            <h1 className="text-xl font-bold text-brand-dark">Lecturer Dashboard</h1>
                         </div>
                         <div className="flex items-center gap-4">
                             {user.role === 'admin' && (
@@ -49,12 +49,12 @@ export default async function LecturerDashboard() {
                                 </Link>
                             )}
                             <div className="text-right">
-                                <p className="text-sm font-medium">{user.name}</p>
+                                <p className="text-sm font-medium text-brand-dark">{user.name}</p>
                                 <RoleBadge role={user.role} />
                             </div>
                             <a
                                 href={signOutUrl}
-                                className="btn btn-secondary px-4 py-2 flex items-center gap-2"
+                                className="btn btn-secondary px-4 py-2 flex items-center gap-2 hover:bg-red-50 hover:text-red-600 transition-colors"
                             >
                                 <LogOut className="w-4 h-4" />
                                 Sign Out
@@ -69,10 +69,10 @@ export default async function LecturerDashboard() {
                 {/* Header with CTA */}
                 <div className="mb-8 flex justify-between items-start">
                     <div>
-                        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                        <h2 className="text-3xl font-bold text-brand-dark mb-2">
                             Welcome, {user.name}! 🎓
                         </h2>
-                        <p className="text-gray-600">
+                        <p className="text-brand-dark/70">
                             Manage your courses and upload learning materials
                         </p>
                     </div>
@@ -117,21 +117,21 @@ export default async function LecturerDashboard() {
                     {/* Main Content - Courses */}
                     <div className="lg:col-span-2">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-2xl font-bold">My Courses</h3>
+                            <h3 className="text-2xl font-bold text-brand-dark">My Courses</h3>
                             {totalCourses > 0 && (
-                                <div className="text-sm text-gray-500">
+                                <div className="text-sm text-brand-dark/60">
                                     {totalCourses} {totalCourses === 1 ? 'course' : 'courses'}
                                 </div>
                             )}
                         </div>
 
                         {!courses || courses.length === 0 ? (
-                            <div className="card p-12 text-center">
-                                <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                                <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                            <div className="card p-12 text-center bg-brand-beige/50 border-brand-dark/5">
+                                <BookOpen className="w-16 h-16 text-brand-dark/20 mx-auto mb-4" />
+                                <h4 className="text-lg font-semibold text-brand-dark mb-2">
                                     No Courses Yet
                                 </h4>
-                                <p className="text-gray-600 mb-4">
+                                <p className="text-brand-dark/60 mb-4">
                                     Create your first course to start uploading learning materials.
                                 </p>
                                 <Link
@@ -164,29 +164,29 @@ export default async function LecturerDashboard() {
 
                     {/* Sidebar */}
                     <div className="lg:col-span-1">
-                        <h3 className="text-xl font-bold mb-4">Recent Activity</h3>
+                        <h3 className="text-xl font-bold mb-4 text-brand-dark">Recent Activity</h3>
                         <ActivityFeed activities={recentActivities} maxItems={5} />
 
                         {/* Quick Actions */}
                         <div className="mt-6">
-                            <h3 className="text-lg font-semibold mb-3">Quick Actions</h3>
+                            <h3 className="text-lg font-semibold mb-3 text-brand-dark">Quick Actions</h3>
                             <div className="space-y-2">
                                 <Link
                                     href="/lecturer/courses/new"
-                                    className="block p-3 rounded-lg bg-white border hover:border-lecturer-300 hover:shadow-sm transition-all"
+                                    className="block p-3 rounded-lg bg-white border border-brand-dark/5 hover:border-brand-orange/30 hover:shadow-md transition-all group"
                                 >
                                     <div className="flex items-center gap-2">
-                                        <Plus className="w-4 h-4 text-lecturer-600" />
-                                        <span className="text-sm font-medium">Create New Course</span>
+                                        <Plus className="w-4 h-4 text-brand-dark group-hover:text-brand-orange transition-colors" />
+                                        <span className="text-sm font-medium text-brand-dark">Create New Course</span>
                                     </div>
                                 </Link>
                                 <Link
                                     href="/lecturer/dashboard"
-                                    className="block p-3 rounded-lg bg-white border hover:border-lecturer-300 hover:shadow-sm transition-all"
+                                    className="block p-3 rounded-lg bg-white border border-brand-dark/5 hover:border-brand-orange/30 hover:shadow-md transition-all group"
                                 >
                                     <div className="flex items-center gap-2">
-                                        <BookOpen className="w-4 h-4 text-lecturer-600" />
-                                        <span className="text-sm font-medium">View All Courses</span>
+                                        <BookOpen className="w-4 h-4 text-brand-dark group-hover:text-brand-orange transition-colors" />
+                                        <span className="text-sm font-medium text-brand-dark">View All Courses</span>
                                     </div>
                                 </Link>
                             </div>

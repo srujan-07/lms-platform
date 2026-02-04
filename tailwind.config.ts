@@ -9,32 +9,45 @@ const config: Config = {
     theme: {
         extend: {
             colors: {
+                // Semantic mappings
                 primary: {
-                    50: '#f0f9ff',
-                    100: '#e0f2fe',
-                    200: '#bae6fd',
-                    300: '#7dd3fc',
-                    400: '#38bdf8',
-                    500: '#0ea5e9',
-                    600: '#0284c7',
-                    700: '#0369a1',
-                    800: '#075985',
-                    900: '#0c4a6e',
+                    DEFAULT: '#FF6D1F', // Orange CTA
+                    50: '#fff1ea',
+                    100: '#ffdfcc',
+                    200: '#ffc3a3',
+                    300: '#ffa070',
+                    400: '#ff7a3d',
+                    500: '#FF6D1F', // Base
+                    600: '#e6520d',
+                    700: '#bf3b06',
+                    800: '#992e09',
+                    900: '#7c270b',
                 },
+                // Brand specific
+                brand: {
+                    beige: '#F4E7C6', // Surface / Cards
+                    light: '#FAF3E1', // Page Background
+                    orange: '#FF6D1F', // Highlight
+                    dark: '#222222', // Text
+                },
+                // Keep roles but map to theme or neutral for now to avoid clashes, 
+                // or just keep them accessible for legacy code that hasn't been fully refactored yet.
+                // We will try to rely on 'brand' colors, but let's keep role keys to avoid breaking build,
+                // matching them to the theme.
                 student: {
-                    light: '#bae6fd',
-                    DEFAULT: '#0ea5e9',
-                    dark: '#0369a1',
+                    light: '#FAF3E1',
+                    DEFAULT: '#FF6D1F',
+                    dark: '#992e09',
                 },
                 lecturer: {
-                    light: '#d8b4fe',
-                    DEFAULT: '#a855f7',
-                    dark: '#7e22ce',
+                    light: '#FAF3E1',
+                    DEFAULT: '#FF6D1F',
+                    dark: '#992e09',
                 },
                 admin: {
-                    light: '#fca5a5',
-                    DEFAULT: '#ef4444',
-                    dark: '#b91c1c',
+                    light: '#FAF3E1',
+                    DEFAULT: '#FF6D1F',
+                    dark: '#992e09',
                 },
             },
             animation: {
