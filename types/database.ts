@@ -128,8 +128,8 @@ export interface Database {
             };
             assignment_submissions: {
                 Row: AssignmentSubmission;
-                Insert: Omit<AssignmentSubmission, 'id' | 'submitted_at'>;
-                Update: Partial<Omit<AssignmentSubmission, 'id' | 'submitted_at'>>;
+                Insert: Omit<AssignmentSubmission, 'id' | 'submitted_at' | 'assignment' | 'student'>;
+                Update: Partial<Omit<AssignmentSubmission, 'id' | 'submitted_at' | 'assignment' | 'student'>>;
             };
         };
     };
