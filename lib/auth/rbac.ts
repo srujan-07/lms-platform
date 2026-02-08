@@ -14,9 +14,16 @@ export async function getCurrentUser() {
         return null;
     }
 
-    // Read role from StackAuth serverMetadata
-    // Default to 'student' if no role is set
-    const role = (user.serverMetadata?.role as UserRole) || 'student';
+    // Fetch the real-time role from Supabase
+    const supabase = await createClient();
+    const { data: profile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single() as any;
+
+    // Default to 'student' if role is not found in DB
+    const role = (profile?.role as UserRole) || 'student';
 
     return {
         id: user.id,

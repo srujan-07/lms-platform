@@ -25,26 +25,30 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(url);
     }
 
-    // Sync user to Supabase if not already synced
+    // Sync user to Supabase if not already synced and get Role
+    let userRole = 'student'; // Default
+
     try {
         const supabase = await createClient();
 
         // Check if user exists in Supabase
         const { data: existingUser } = await supabase
             .from('users')
-            .select('id')
+            .select('role')
             .eq('id', user.id)
-            .single();
+            .single() as any;
 
-        // If user doesn't exist, create them with default student role
-        if (!existingUser) {
+        if (existingUser) {
+            userRole = existingUser.role;
+        } else {
+            // If user doesn't exist, create them with default student role
             const { error } = await supabase
                 .from('users')
                 .insert({
                     id: user.id,
                     email: user.primaryEmail || '',
                     name: user.displayName || user.primaryEmail || 'User',
-                    role: 'student', // Default role, can be changed by admin
+                    role: 'student',
                 } as any);
 
             if (error) {
@@ -53,11 +57,9 @@ export async function middleware(request: NextRequest) {
         }
     } catch (error) {
         console.error('Error in user sync middleware:', error);
-        // Continue anyway - don't block the request
     }
 
     // Check onboarding completion for students
-    const userRole = user.serverMetadata?.role;
 
     if (userRole === 'student') {
         // Allow access to onboarding routes

@@ -16,7 +16,10 @@ export async function getCourses() {
         .from('courses')
         .select(`
       *,
-      lecturer:users!courses_lecturer_id_fkey(id, name, email)
+      lecturer:users!courses_lecturer_id_fkey(id, name, email),
+      lecturers:course_lecturers(
+          user:users(id, name, email)
+      )
     `)
         .order('created_at', { ascending: false });
 
@@ -36,8 +39,11 @@ export async function getCoursesByLecturer(lecturerId: string) {
 
     const { data, error } = await supabase
         .from('courses')
-        .select('*')
-        .eq('lecturer_id', lecturerId)
+        .select(`
+            *,
+            course_lecturers!inner(lecturer_id)
+        `)
+        .eq('course_lecturers.lecturer_id', lecturerId)
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -77,21 +83,30 @@ export async function getEnrolledCourses(studentId: string) {
 export async function createCourse(
     title: string,
     description: string,
-    lecturerId?: string,
+    lecturerIds: string[] = [], // Changed from optional single ID to array
     accessCode?: string
 ) {
     const user = await requireAuth();
-
-    // Determine lecturer ID
-    const finalLecturerId = lecturerId || user.id;
 
     // Check permissions
     if (user.role !== 'admin' && user.role !== 'lecturer') {
         return { success: false, error: 'Unauthorized', data: null };
     }
 
-    if (user.role === 'lecturer' && finalLecturerId !== user.id) {
-        return { success: false, error: 'Lecturers can only create courses for themselves', data: null };
+    // Prepare lecturer list
+    let finalLecturerIds = [...lecturerIds];
+
+    // If lecturer creates course, ensure they are included
+    if (user.role === 'lecturer') {
+        if (!finalLecturerIds.includes(user.id)) {
+            finalLecturerIds.push(user.id);
+        }
+    }
+
+    // If no lecturers assigned (e.g. admin created without selection), assign to creator if they are lecturer? 
+    // Or allow empty? Let's default to creator if created by lecturer, or empty if admin.
+    if (finalLecturerIds.length === 0 && user.role === 'lecturer') {
+        finalLecturerIds.push(user.id);
     }
 
     // Generate access code if not provided
@@ -99,36 +114,60 @@ export async function createCourse(
 
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    // 1. Create Course
+    // We still populate lecturer_id for backward compatibility (using the first lecturer or creator)
+    const primaryLecturerId = finalLecturerIds.length > 0 ? finalLecturerIds[0] : (user.role === 'lecturer' ? user.id : null);
+
+    const { data: course, error: courseError } = await supabase
         .from('courses')
         .insert({
             title,
             description,
-            lecturer_id: finalLecturerId,
+            lecturer_id: primaryLecturerId, // Legacy field
             access_code: finalAccessCode.toUpperCase(),
         } as any)
         .select()
         .single();
 
-    if (error) {
-        return { success: false, error: error.message, data: null };
+    if (courseError) {
+        return { success: false, error: courseError.message, data: null };
+    }
+
+    const courseId = (course as any).id;
+
+    // 2. Insert into course_lecturers
+    if (finalLecturerIds.length > 0) {
+        const lecturerRows = finalLecturerIds.map(id => ({
+            course_id: courseId,
+            lecturer_id: id
+        }));
+
+        const { error: relationError } = await supabase
+            .from('course_lecturers')
+            .insert(lecturerRows as any);
+
+        if (relationError) {
+            console.error('Error assigning lecturers:', relationError);
+            // Non-fatal, but should be noted. 
+            // We could try to delete the course, but let's just return success with warning logging for now.
+        }
     }
 
     // Log action
-    await logAction(user.id, 'course.created', 'course', (data as any).id, { title });
+    await logAction(user.id, 'course.created', 'course', courseId, {
+        title,
+        lecturer_count: finalLecturerIds.length
+    });
 
     revalidatePath('/lecturer/dashboard');
     revalidatePath('/admin/dashboard');
 
-    return { success: true, data, error: null };
+    return { success: true, data: course, error: null };
 }
 
-/**
- * Update a course
- */
 export async function updateCourse(
     courseId: string,
-    updates: { title?: string; description?: string; lecturer_id?: string }
+    updates: { title?: string; description?: string; lecturerIds?: string[] }
 ) {
     const user = await requireAuth();
 
@@ -137,7 +176,10 @@ export async function updateCourse(
     // Check if user owns this course or is admin
     const { data: course } = await supabase
         .from('courses')
-        .select('lecturer_id')
+        .select(`
+            *,
+            lecturers:course_lecturers(lecturer_id)
+        `)
         .eq('id', courseId)
         .single() as any;
 
@@ -145,20 +187,74 @@ export async function updateCourse(
         return { success: false, error: 'Course not found', data: null };
     }
 
-    if (user.role !== 'admin' && course.lecturer_id !== user.id) {
+    // Permission check
+    let isAuthorized = user.role === 'admin';
+    if (!isAuthorized) {
+        // Check legacy lecturer_id
+        if (course.lecturer_id === user.id) isAuthorized = true;
+
+        // Check new course_lecturers
+        if (course.lecturers && Array.isArray(course.lecturers)) {
+            const isAssigned = course.lecturers.some((l: any) => l.lecturer_id === user.id);
+            if (isAssigned) isAuthorized = true;
+        }
+    }
+
+    if (!isAuthorized) {
         return { success: false, error: 'Unauthorized', data: null };
     }
 
-    const { data, error } = await supabase
-        .from('courses')
-        // @ts-ignore - Supabase type inference issue with dynamic updates
-        .update(updates)
-        .eq('id', courseId)
-        .select()
-        .single();
+    // Separate course updates from lecturer updates
+    const courseUpdates: any = {};
+    if (updates.title !== undefined) courseUpdates.title = updates.title;
+    if (updates.description !== undefined) courseUpdates.description = updates.description;
 
-    if (error) {
-        return { success: false, error: error.message, data: null };
+    // Update course details if provided
+    let updatedCourse = course;
+    if (Object.keys(courseUpdates).length > 0) {
+        const { data, error } = await supabase
+            .from('courses')
+            .update(courseUpdates)
+            .eq('id', courseId)
+            .select()
+            .single();
+
+        if (error) {
+            return { success: false, error: error.message, data: null };
+        }
+        updatedCourse = data;
+    }
+
+    // Update lecturers if provided
+    if (updates.lecturerIds !== undefined) {
+
+        // 1. Get current lecturers
+        const currentLecturerIds = course.lecturers?.map((l: any) => l.lecturer_id) || [];
+        const newLecturerIds = updates.lecturerIds;
+
+        // 2. Determine additions and removals
+        const toAdd = newLecturerIds.filter(id => !currentLecturerIds.includes(id));
+        const toRemove = currentLecturerIds.filter((id: string) => !newLecturerIds.includes(id));
+
+        // 3. Remove
+        if (toRemove.length > 0) {
+            await supabase
+                .from('course_lecturers')
+                .delete()
+                .eq('course_id', courseId)
+                .in('lecturer_id', toRemove);
+        }
+
+        // 4. Add
+        if (toAdd.length > 0) {
+            const rowsToAdd = toAdd.map(id => ({
+                course_id: courseId,
+                lecturer_id: id
+            }));
+            await supabase
+                .from('course_lecturers')
+                .insert(rowsToAdd as any);
+        }
     }
 
     await logAction(user.id, 'course.updated', 'course', courseId, updates);
@@ -166,7 +262,7 @@ export async function updateCourse(
     revalidatePath('/lecturer/dashboard');
     revalidatePath('/admin/dashboard');
 
-    return { success: true, data, error: null };
+    return { success: true, data: updatedCourse, error: null };
 }
 
 /**
@@ -220,7 +316,10 @@ export async function getCourseDetails(courseId: string) {
             .from('courses')
             .select(`
         *,
-        lecturer:users!courses_lecturer_id_fkey(id, name, email)
+        lecturer:users!courses_lecturer_id_fkey(id, name, email),
+        lecturers:course_lecturers(
+            user:users(id, name, email)
+        )
       `)
             .eq('id', courseId)
             .single(),

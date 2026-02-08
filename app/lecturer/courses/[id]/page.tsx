@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { BookOpen, Upload, FileText, Download, Edit2, Trash2, Loader2, X, Plus } from 'lucide-react';
+import { BookOpen, Upload, FileText, Download, Edit2, Trash2, Loader2, X, Plus, Check } from 'lucide-react';
 import Link from 'next/link';
 import { useDropzone } from 'react-dropzone';
 import CourseCurriculum from '@/components/courses/CourseCurriculum';
@@ -37,10 +37,46 @@ export default function LecturerCoursePage() {
     const [uploadData, setUploadData] = useState({ title: '', description: '', file: null as File | null });
     const [uploading, setUploading] = useState(false);
 
+    const [showEditModal, setShowEditModal] = useState(false);
+
+    // Import user context
+    // We need to fetch user role here or use useAuth. 
+    // Assuming useAuth is available or we fetch user.
+    // Let's add useAuth usage.
+    const [user, setUser] = useState<any>(null); // Placeholder if useAuth unavailable in this file yet
+
+    // Fetch user for role check (or assume implemented)
+    // For now, let's fetch user role from an API or assume passed. 
+    // Best to import useAuth.
+
     useEffect(() => {
+        // Fetch current user logic
+        fetch('/api/auth/me').then(res => res.json()).then(data => {
+            if (data.user) setUser(data.user);
+        }).catch(() => { });
         fetchData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [courseId]);
+
+    const handleCourseUpdate = async (updates: any) => {
+        try {
+            const res = await fetch(`/api/courses/${courseId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+            const data = await res.json();
+            if (data.success) {
+                setCourse(data.data);
+                fetchData(); // Refresh to get updated lecturers
+            } else {
+                alert('Update failed: ' + data.error);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Update failed');
+        }
+    };
 
     const fetchData = async () => {
         try {
@@ -177,6 +213,13 @@ export default function LecturerCoursePage() {
                             <h1 className="text-xl font-bold text-brand-dark">{course.title}</h1>
                         </div>
                         <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setShowEditModal(true)}
+                                className="btn btn-secondary px-4 py-2 flex items-center gap-2"
+                            >
+                                <Edit2 className="w-4 h-4" />
+                                Edit
+                            </button>
                             <button
                                 onClick={() => setShowUploadModal(true)}
                                 className="btn btn-primary px-4 py-2 flex items-center gap-2"
@@ -341,6 +384,139 @@ export default function LecturerCoursePage() {
                     </div>
                 </div>
             )}
+            {/* Edit Course Modal */}
+            <EditCourseModal
+                isOpen={showEditModal}
+                onClose={() => setShowEditModal(false)}
+                course={course}
+                onUpdate={handleCourseUpdate}
+                userRole={user?.role} // Need to access user context or pass it
+            />
+        </div>
+    );
+}
+
+function EditCourseModal({ isOpen, onClose, course, onUpdate, userRole }: any) {
+    const [formData, setFormData] = useState({
+        title: course?.title || '',
+        description: course?.description || '',
+        lecturerIds: [] as string[],
+    });
+    const [lecturers, setLecturers] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (course) {
+            setFormData({
+                title: course.title,
+                description: course.description || '',
+                // Initialize with current lecturers
+                lecturerIds: course.lecturers?.map((l: any) => l.user?.id || l.id) || [course.lecturer_id],
+            });
+        }
+    }, [course]);
+
+    useEffect(() => {
+        if (isOpen && userRole === 'admin') {
+            fetchLecturers();
+        }
+    }, [isOpen, userRole]);
+
+    const fetchLecturers = async () => {
+        try {
+            const response = await fetch('/api/admin/users');
+            const data = await response.json();
+            if (data.success) {
+                setLecturers(data.data.filter((u: any) => u.role === 'lecturer'));
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            await onUpdate(formData);
+            onClose();
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="card max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold">Edit Course</h2>
+                    <button onClick={onClose}><X className="w-5 h-5 text-gray-400" /></button>
+                </div>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Title</label>
+                        <input
+                            className="input w-full"
+                            value={formData.title}
+                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Description</label>
+                        <textarea
+                            className="input w-full"
+                            rows={4}
+                            value={formData.description}
+                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        />
+                    </div>
+
+                    {userRole === 'admin' && (
+                        <div>
+                            <label className="block text-sm font-medium mb-2">Manage Lecturers</label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto border p-2 rounded">
+                                {lecturers.map(lecturer => (
+                                    <div
+                                        key={lecturer.id}
+                                        onClick={() => {
+                                            const ids = formData.lecturerIds;
+                                            setFormData({
+                                                ...formData,
+                                                lecturerIds: ids.includes(lecturer.id)
+                                                    ? ids.filter(id => id !== lecturer.id)
+                                                    : [...ids, lecturer.id]
+                                            });
+                                        }}
+                                        className={`p-2 rounded border cursor-pointer flex items-center gap-2 ${formData.lecturerIds.includes(lecturer.id)
+                                            ? 'bg-orange-50 border-orange-200'
+                                            : 'hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${formData.lecturerIds.includes(lecturer.id) ? 'bg-orange-500 text-white' : 'bg-gray-200'
+                                            }`}>
+                                            {lecturer.name.charAt(0)}
+                                        </div>
+                                        <span className="text-sm truncate">{lecturer.name}</span>
+                                        {formData.lecturerIds.includes(lecturer.id) && <Check className="w-3 h-3 text-orange-500 ml-auto" />}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex gap-2 pt-4">
+                        <button type="submit" disabled={loading} className="btn btn-primary flex-1">
+                            {loading ? 'Saving...' : 'Save Changes'}
+                        </button>
+                        <button type="button" onClick={onClose} className="btn btn-secondary flex-1">Cancel</button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }

@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getLectureNotes, uploadLectureNote } from '@/lib/actions/lecture-notes';
-import { stackServerApp } from '@/lib/auth/stackauth';
+import { requireRole } from '@/lib/auth/rbac';
 
 export async function GET(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
     try {
-        const user = await stackServerApp.getUser();
-        if (!user) {
-            return NextResponse.json(
-                { success: false, error: 'Unauthorized', data: null },
-                { status: 401 }
-            );
-        }
+        const user = await requireRole(['student', 'lecturer', 'admin']);
 
         const result = await getLectureNotes(params.id);
 
@@ -39,22 +33,7 @@ export async function POST(
     { params }: { params: { id: string } }
 ) {
     try {
-        const user = await stackServerApp.getUser();
-        if (!user) {
-            return NextResponse.json(
-                { success: false, error: 'Unauthorized', data: null },
-                { status: 401 }
-            );
-        }
-
-        // Check if user is lecturer or admin
-        const userRole = user.serverMetadata?.role;
-        if (userRole !== 'lecturer' && userRole !== 'admin') {
-            return NextResponse.json(
-                { success: false, error: 'Forbidden - Lecturer or Admin access required', data: null },
-                { status: 403 }
-            );
-        }
+        const user = await requireRole(['lecturer', 'admin']);
 
         const formData = await request.formData();
         const title = formData.get('title') as string;

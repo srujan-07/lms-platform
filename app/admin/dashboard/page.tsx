@@ -6,6 +6,7 @@ import { getCourses } from '@/lib/actions/courses';
 import { getGlobalAnalytics, getAllStudentProfilesWithDetails, getEnrollmentStatistics } from '@/lib/actions/analytics';
 import Link from 'next/link';
 import { RoleBadge } from '@/components/ui/RoleBadge';
+import { UserHeader } from '@/components/UserHeader';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 
@@ -54,20 +55,7 @@ export default async function AdminDashboard() {
                             <h1 className="text-xl font-bold text-brand-dark">Admin Dashboard</h1>
                         </div>
                         <div className="flex items-center gap-4">
-                            <Link href="/lecturer/dashboard" className="btn btn-secondary px-4 py-2">
-                                Lecturer View
-                            </Link>
-                            <div className="text-right">
-                                <p className="text-sm font-medium text-brand-dark">{user.name}</p>
-                                <RoleBadge role={user.role} />
-                            </div>
-                            <a
-                                href={signOutUrl}
-                                className="btn btn-secondary px-4 py-2 flex items-center gap-2 hover:bg-red-50 hover:text-red-600 transition-colors"
-                            >
-                                <LogOut className="w-4 h-4" />
-                                Sign Out
-                            </a>
+                            <UserHeader />
                         </div>
                     </div>
                 </div>

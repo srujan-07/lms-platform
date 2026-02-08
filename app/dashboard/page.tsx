@@ -4,6 +4,7 @@ import { BookOpen, Upload, Users, LogOut, Clock, TrendingUp, FileText } from 'lu
 import { getEnrolledCourses } from '@/lib/actions/courses';
 import Link from 'next/link';
 import { RoleBadge } from '@/components/ui/RoleBadge';
+import { UserHeader } from '@/components/UserHeader';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { CourseCard } from '@/components/dashboard/CourseCard';
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
@@ -55,19 +56,7 @@ export default async function StudentDashboard() {
                             <BookOpen className="w-6 h-6 text-brand-orange" />
                             <h1 className="text-xl font-bold text-brand-dark">Student Dashboard</h1>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="text-right">
-                                <p className="text-sm font-medium text-brand-dark">{user.name}</p>
-                                <RoleBadge role={user.role} />
-                            </div>
-                            <a
-                                href={signOutUrl}
-                                className="btn btn-secondary px-4 py-2 flex items-center gap-2 hover:bg-red-50 hover:text-red-600 transition-colors"
-                            >
-                                <LogOut className="w-4 h-4" />
-                                Sign Out
-                            </a>
-                        </div>
+                        <UserHeader />
                     </div>
                 </div>
             </nav>

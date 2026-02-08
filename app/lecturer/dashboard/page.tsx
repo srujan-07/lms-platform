@@ -5,6 +5,7 @@ import { BookOpen, Upload, FileText, LogOut, Plus, Users, TrendingUp } from 'luc
 import { getCoursesByLecturer } from '@/lib/actions/courses';
 import Link from 'next/link';
 import { RoleBadge } from '@/components/ui/RoleBadge';
+import { UserHeader } from '@/components/UserHeader';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { CourseCard } from '@/components/dashboard/CourseCard';
 import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
@@ -48,17 +49,7 @@ export default async function LecturerDashboard() {
                                     Admin Dashboard
                                 </Link>
                             )}
-                            <div className="text-right">
-                                <p className="text-sm font-medium text-brand-dark">{user.name}</p>
-                                <RoleBadge role={user.role} />
-                            </div>
-                            <a
-                                href={signOutUrl}
-                                className="btn btn-secondary px-4 py-2 flex items-center gap-2 hover:bg-red-50 hover:text-red-600 transition-colors"
-                            >
-                                <LogOut className="w-4 h-4" />
-                                Sign Out
-                            </a>
+                            <UserHeader />
                         </div>
                     </div>
                 </div>

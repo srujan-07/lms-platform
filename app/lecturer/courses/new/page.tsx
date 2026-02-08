@@ -1,21 +1,49 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BookOpen, Loader2, Key, Copy, Check, RefreshCw } from 'lucide-react';
+import { BookOpen, Loader2, Key, Copy, Check, RefreshCw, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 
 export default function NewCoursePage() {
     const router = useRouter();
+    const { user } = useAuth();
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         accessCode: '',
+        lecturerIds: [] as string[],
     });
     const [loading, setLoading] = useState(false);
+    const [lecturers, setLecturers] = useState<any[]>([]);
     const [error, setError] = useState('');
     const [copied, setCopied] = useState(false);
     const [createdCourse, setCreatedCourse] = useState<any>(null);
+
+    // Fetch lecturers if admin
+    useEffect(() => {
+        if (user?.role === 'admin') {
+            fetchLecturers();
+        }
+    }, [user?.role]);
+
+    const fetchLecturers = async () => {
+        try {
+            const response = await fetch('/api/admin/users');
+            const data = await response.json();
+            if (data.success) {
+                // Filter for lecturers
+                const lecturerList = data.data.filter((u: any) => u.role === 'lecturer');
+                setLecturers(lecturerList);
+                if (lecturerList.length > 0) {
+                    setFormData(prev => ({ ...prev, lecturerIds: [lecturerList[0].id] }));
+                }
+            }
+        } catch (err) {
+            console.error('Failed to fetch lecturers', err);
+        }
+    };
 
     const generateAccessCode = () => {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -52,7 +80,6 @@ export default function NewCoursePage() {
 
             if (data.success) {
                 setCreatedCourse(data.data);
-                // Don't redirect immediately, show success with access code
             } else {
                 setError(data.error || 'Failed to create course');
             }
@@ -213,6 +240,60 @@ export default function NewCoursePage() {
                         {error && (
                             <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
                                 {error}
+                            </div>
+                        )}
+
+                        {/* Lecturer Selection (Admin Only) */}
+                        {user?.role === 'admin' && (
+                            <div>
+                                <label className="block text-sm font-medium text-brand-dark mb-3">
+                                    Assign Lecturers
+                                </label>
+                                {lecturers.length > 0 ? (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
+                                        {lecturers.map((lecturer) => (
+                                            <div
+                                                key={lecturer.id}
+                                                onClick={() => {
+                                                    const currentIds = formData.lecturerIds;
+                                                    const newIds = currentIds.includes(lecturer.id)
+                                                        ? currentIds.filter(id => id !== lecturer.id)
+                                                        : [...currentIds, lecturer.id];
+                                                    setFormData({ ...formData, lecturerIds: newIds });
+                                                }}
+                                                className={`
+                                                    p-3 rounded-lg border cursor-pointer transition-all flex items-center gap-3
+                                                    ${formData.lecturerIds.includes(lecturer.id)
+                                                        ? 'bg-brand-orange/10 border-brand-orange text-brand-dark'
+                                                        : 'bg-white border-brand-dark/10 hover:border-brand-orange/50 text-brand-dark/70'
+                                                    }
+                                                `}
+                                            >
+                                                <div className={`
+                                                    w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold
+                                                    ${formData.lecturerIds.includes(lecturer.id)
+                                                        ? 'bg-brand-orange text-white'
+                                                        : 'bg-brand-light text-brand-dark/50'
+                                                    }
+                                                `}>
+                                                    {lecturer.name.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium truncate">{lecturer.name}</p>
+                                                    <p className="text-xs truncate opacity-70">{lecturer.email}</p>
+                                                </div>
+                                                {formData.lecturerIds.includes(lecturer.id) && (
+                                                    <Check className="w-4 h-4 text-brand-orange flex-shrink-0" />
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-brand-dark/50 italic">No lecturers found.</p>
+                                )}
+                                <p className="text-xs text-brand-dark/50 mt-2">
+                                    Select one or more lecturers to manage this course.
+                                </p>
                             </div>
                         )}
 

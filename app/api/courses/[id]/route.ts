@@ -7,6 +7,7 @@ const updateCourseSchema = z.object({
     title: z.string().min(1).max(200).optional(),
     description: z.string().max(1000).optional(),
     lecturer_id: z.string().uuid().optional(),
+    lecturerIds: z.array(z.string()).optional(),
 });
 
 export async function GET(

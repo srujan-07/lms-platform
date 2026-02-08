@@ -1,7 +1,21 @@
 import Link from 'next/link';
 import { ArrowRight, Shield, Brain, BookOpen } from 'lucide-react';
+import { getCurrentUser } from '@/lib/auth/rbac';
+import { redirect } from 'next/navigation';
 
-export default function HomePage() {
+export default async function HomePage() {
+    const user = await getCurrentUser();
+
+    if (user) {
+        if (user.role === 'admin') {
+            redirect('/admin/dashboard');
+        } else if (user.role === 'lecturer') {
+            redirect('/lecturer/dashboard');
+        } else {
+            redirect('/dashboard');
+        }
+    }
+
     return (
         <div className="min-h-screen bg-brand-light">
             <div className="container mx-auto px-4 py-16">

@@ -11,6 +11,14 @@ interface Course {
     lecturer_id: string;
     access_code: string;
     created_at: string;
+    lecturers?: {
+        lecturer_id: string;
+        user?: {
+            id: string;
+            name: string;
+            email: string;
+        }
+    }[];
     lecturer?: {
         id: string;
         name: string;
@@ -142,7 +150,19 @@ export default function AdminCoursesPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-sm text-brand-dark/70">
-                                                {course.lecturer?.name || 'Unknown'}
+                                                <div className="flex flex-col gap-1">
+                                                    {course.lecturers && course.lecturers.length > 0 ? (
+                                                        course.lecturers.map((l) => (
+                                                            <span key={l.lecturer_id} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-brand-orange/10 text-brand-dark w-fit">
+                                                                {l.user?.name || 'Unknown'}
+                                                            </span>
+                                                        ))
+                                                    ) : course.lecturer ? (
+                                                        <span className="text-brand-dark/70">{course.lecturer.name}</span>
+                                                    ) : (
+                                                        <span className="text-brand-dark/40 italic">Unassigned</span>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-2">

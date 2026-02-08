@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCourses, createCourse } from '@/lib/actions/courses';
 import { stackServerApp } from '@/lib/auth/stackauth';
+import { requireRole } from '@/lib/auth/rbac';
 import { z } from 'zod';
 
 const createCourseSchema = z.object({
     title: z.string().min(1, 'Title is required').max(200),
     description: z.string().max(1000).optional(),
     lecturerId: z.string().uuid().optional(),
+    lecturerIds: z.array(z.string()).optional(),
     accessCode: z.string().min(4).max(20).optional(),
 });
 
@@ -42,23 +44,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        // Check authentication
-        const user = await stackServerApp.getUser();
-        if (!user) {
-            return NextResponse.json(
-                { success: false, error: 'Unauthorized', data: null },
-                { status: 401 }
-            );
-        }
-
-        // Check if user is lecturer or admin
-        const userRole = user.serverMetadata?.role;
-        if (userRole !== 'lecturer' && userRole !== 'admin') {
-            return NextResponse.json(
-                { success: false, error: 'Forbidden - Lecturer or Admin access required', data: null },
-                { status: 403 }
-            );
-        }
+        // Check authentication and role
+        const user = await requireRole(['lecturer', 'admin']);
 
         // Parse and validate request body
         const body = await request.json();
@@ -71,10 +58,13 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { title, description, lecturerId, accessCode } = validation.data;
+        const { title, description, lecturerId, lecturerIds, accessCode } = validation.data;
+
+        // Handle legacy lecturerId if lecturerIds not provided
+        const finalLecturerIds = lecturerIds || (lecturerId ? [lecturerId] : []);
 
         // Create course
-        const result = await createCourse(title, description || '', lecturerId, accessCode);
+        const result = await createCourse(title, description || '', finalLecturerIds, accessCode);
 
         if (!result.success) {
             return NextResponse.json(
