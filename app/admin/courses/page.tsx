@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BookOpen, Plus, Edit2, Trash2, Loader2, Key, Copy, Check } from 'lucide-react';
+import { BookOpen, Plus, Edit2, Trash2, Loader2, Key, Copy, Check, Users } from 'lucide-react';
 import Link from 'next/link';
+import { ManageLecturersModal } from '@/components/admin/ManageLecturersModal';
 
 interface Course {
     id: string;
@@ -31,6 +32,11 @@ export default function AdminCoursesPage() {
     const [loading, setLoading] = useState(true);
     const [deleting, setDeleting] = useState<string | null>(null);
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
+    const [manageLecturersModal, setManageLecturersModal] = useState<{
+        isOpen: boolean;
+        courseId: string;
+        courseTitle: string;
+    }>({ isOpen: false, courseId: '', courseTitle: '' });
 
     useEffect(() => {
         fetchCourses();
@@ -87,6 +93,14 @@ export default function AdminCoursesPage() {
         }
     };
 
+    const openManageLecturersModal = (courseId: string, courseTitle: string) => {
+        setManageLecturersModal({ isOpen: true, courseId, courseTitle });
+    };
+
+    const closeManageLecturersModal = () => {
+        setManageLecturersModal({ isOpen: false, courseId: '', courseTitle: '' });
+    };
+
     return (
         <div className="min-h-screen bg-brand-light">
             <nav className="bg-brand-light/80 backdrop-blur-md shadow-sm border-b border-brand-dark/5 sticky top-0 z-10 transition-all">
@@ -132,7 +146,7 @@ export default function AdminCoursesPage() {
                                 <thead className="bg-brand-light/50 border-b border-brand-dark/5">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase">Title</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase">Lecturer</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase">Lecturers</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase">Access Code</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase">Created</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-brand-dark/60 uppercase">Actions</th>
@@ -149,19 +163,33 @@ export default function AdminCoursesPage() {
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-brand-dark/70">
-                                                <div className="flex flex-col gap-1">
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col gap-1.5">
                                                     {course.lecturers && course.lecturers.length > 0 ? (
-                                                        course.lecturers.map((l) => (
-                                                            <span key={l.lecturer_id} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-brand-orange/10 text-brand-dark w-fit">
-                                                                {l.user?.name || 'Unknown'}
-                                                            </span>
-                                                        ))
+                                                        <>
+                                                            {course.lecturers.slice(0, 2).map((l) => (
+                                                                <span key={l.lecturer_id} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-brand-orange/10 text-brand-dark w-fit">
+                                                                    {l.user?.name || 'Unknown'}
+                                                                </span>
+                                                            ))}
+                                                            {course.lecturers.length > 2 && (
+                                                                <span className="text-xs text-brand-dark/60">
+                                                                    +{course.lecturers.length - 2} more
+                                                                </span>
+                                                            )}
+                                                        </>
                                                     ) : course.lecturer ? (
-                                                        <span className="text-brand-dark/70">{course.lecturer.name}</span>
+                                                        <span className="text-sm text-brand-dark/70">{course.lecturer.name}</span>
                                                     ) : (
-                                                        <span className="text-brand-dark/40 italic">Unassigned</span>
+                                                        <span className="text-sm text-brand-dark/40 italic">Unassigned</span>
                                                     )}
+                                                    <button
+                                                        onClick={() => openManageLecturersModal(course.id, course.title)}
+                                                        className="text-xs text-brand-orange hover:text-brand-orange/80 font-medium flex items-center gap-1 w-fit transition-colors"
+                                                    >
+                                                        <Users className="w-3 h-3" />
+                                                        Manage
+                                                    </button>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
@@ -188,7 +216,7 @@ export default function AdminCoursesPage() {
                                             <td className="px-6 py-4 text-right text-sm space-x-2">
                                                 <Link
                                                     href={`/admin/courses/${course.id}/materials`}
-                                                    className="text-brand-orange hover:text-brand-orange/80 inline-flex items-center gap-1"
+                                                    className="text-brand-orange hover:text-brand-orange/80 inline-flex items-center gap-1 transition-colors"
                                                     title="Manage materials"
                                                 >
                                                     <BookOpen className="w-4 h-4" />
@@ -196,7 +224,7 @@ export default function AdminCoursesPage() {
                                                 </Link>
                                                 <Link
                                                     href={`/lecturer/courses/${course.id}`}
-                                                    className="text-brand-orange hover:text-brand-orange/80 inline-flex items-center gap-1"
+                                                    className="text-brand-orange hover:text-brand-orange/80 inline-flex items-center gap-1 transition-colors"
                                                     title="Edit course"
                                                 >
                                                     <Edit2 className="w-4 h-4" />
@@ -224,6 +252,15 @@ export default function AdminCoursesPage() {
                     )}
                 </div>
             </main>
+
+            {/* Manage Lecturers Modal */}
+            <ManageLecturersModal
+                isOpen={manageLecturersModal.isOpen}
+                onClose={closeManageLecturersModal}
+                courseId={manageLecturersModal.courseId}
+                courseTitle={manageLecturersModal.courseTitle}
+                onUpdate={fetchCourses}
+            />
         </div>
     );
 }

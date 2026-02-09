@@ -205,14 +205,14 @@ export async function updateCourse(
     }
 
     // Separate course updates from lecturer updates
-    const courseUpdates: any = {};
+    const courseUpdates: Record<string, string> = {};
     if (updates.title !== undefined) courseUpdates.title = updates.title;
     if (updates.description !== undefined) courseUpdates.description = updates.description;
 
     // Update course details if provided
     let updatedCourse = course;
     if (Object.keys(courseUpdates).length > 0) {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
             .from('courses')
             .update(courseUpdates)
             .eq('id', courseId)

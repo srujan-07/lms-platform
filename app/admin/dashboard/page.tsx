@@ -116,6 +116,19 @@ export default async function AdminDashboard() {
                     </Link>
 
                     <Link
+                        href="/admin/lecturers"
+                        className="card p-6 hover:shadow-lg transition-all hover:shadow-brand-orange/10 hover:-translate-y-1 group"
+                    >
+                        <div className="flex items-center gap-3 mb-3">
+                            <GraduationCap className="w-8 h-8 text-brand-orange group-hover:scale-110 transition-transform" />
+                            <h3 className="text-lg font-semibold text-brand-dark">Manage Lecturers</h3>
+                        </div>
+                        <p className="text-sm text-brand-dark/70">
+                            Assign lecturer roles and manage course instructors
+                        </p>
+                    </Link>
+
+                    <Link
                         href="/admin/courses"
                         className="card p-6 hover:shadow-lg transition-all hover:shadow-brand-orange/10 hover:-translate-y-1 group"
                     >
