@@ -1,7 +1,7 @@
 import { stackServerApp } from './lib/auth/stackauth';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { createClient } from './lib/supabase/server';
+import { createClient, createAdminClient } from './lib/supabase/server';
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -41,8 +41,9 @@ export async function middleware(request: NextRequest) {
         if (existingUser) {
             userRole = existingUser.role;
         } else {
-            // If user doesn't exist, create them with default student role
-            const { error } = await supabase
+            // Use admin client to bypass RLS - authentication is verified by StackAuth above
+            const adminSupabase = createAdminClient();
+            const { error } = await adminSupabase
                 .from('users')
                 .insert({
                     id: user.id,
@@ -59,36 +60,11 @@ export async function middleware(request: NextRequest) {
         console.error('Error in user sync middleware:', error);
     }
 
-    // Check onboarding completion for students
-
-    if (userRole === 'student') {
-        // Allow access to onboarding routes
-        if (pathname.startsWith('/onboarding') || pathname.startsWith('/api/onboarding')) {
-            return NextResponse.next();
-        }
-
-        // Check if student has completed onboarding
-        try {
-            const supabase = await createClient();
-            const { data: profile } = await supabase
-                .from('student_profiles')
-                .select('onboarding_completed_at')
-                .eq('user_id', user.id)
-                .single();
-
-            // If no profile or not completed, redirect to onboarding
-            if (!profile || !(profile as any).onboarding_completed_at) {
-                const url = request.nextUrl.clone();
-                url.pathname = '/onboarding';
-                return NextResponse.redirect(url);
-            }
-        } catch (error) {
-            console.error('Error checking onboarding status:', error);
-            // On error, redirect to onboarding to be safe
-            const url = request.nextUrl.clone();
-            url.pathname = '/onboarding';
-            return NextResponse.redirect(url);
-        }
+    // Onboarding fully disabled: students go directly to dashboard from any root or onboarding path
+    if (userRole === 'student' && (pathname === '/' || pathname.startsWith('/onboarding'))) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/dashboard';
+        return NextResponse.redirect(url);
     }
 
     // Role-based route protection

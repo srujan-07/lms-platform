@@ -68,7 +68,9 @@ export async function createOrUpdateStudentProfile(input: StudentProfileInput) {
         return { success: false, error: 'Only students can complete onboarding', data: null };
     }
 
-    const supabase = await createClient();
+    // Use admin client for onboarding inserts since StackAuth users don't have Supabase auth context
+    // Authentication is already verified by requireAuth() above
+    const supabase = createAdminClient();
 
     // Check if profile already exists
     const { data: existing } = await supabase
