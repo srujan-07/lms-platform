@@ -23,18 +23,36 @@ export function UserHeader({ signOutUrl = '/api/auth/signout' }: UserHeaderProps
     if (!user) return null;
 
     return (
-        <div className="flex items-center gap-4">
-            <div className="text-right">
-                <p className="text-sm font-medium text-brand-dark">{user.name}</p>
-                <RoleBadge role={user.role} />
-            </div>
-            <a
-                href={signOutUrl}
-                className="btn btn-secondary px-4 py-2 flex items-center gap-2 hover:bg-red-50 hover:text-red-600 transition-colors"
+        <div className="relative">
+            <button
+                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 transition-colors"
+                aria-haspopup="true"
+                aria-expanded="false"
+                onClick={(e) => {
+                    const el = e.currentTarget.nextElementSibling as HTMLElement | null;
+                    if (el) el.classList.toggle('hidden');
+                }}
             >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-            </a>
+                <div className="text-right">
+                    <p className="text-sm font-medium text-brand-dark">{user.name}</p>
+                    <RoleBadge role={user.role} />
+                </div>
+            </button>
+
+            <div className="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-100 rounded shadow-md z-50">
+                <a
+                    href="/dashboard/profile"
+                    className="block px-4 py-2 text-sm text-brand-dark hover:bg-gray-50"
+                >
+                    Update Profile
+                </a>
+                <a
+                    href={signOutUrl}
+                    className="block px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+                >
+                    Sign Out
+                </a>
+            </div>
         </div>
     );
 }

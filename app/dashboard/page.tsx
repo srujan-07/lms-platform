@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
-import { getCurrentUser } from '@/lib/auth/rbac';
-import { BookOpen, Upload, Users, LogOut, Clock, TrendingUp, FileText } from 'lucide-react';
+import { BookOpen, Upload, Users, LogOut, Clock, TrendingUp, FileText, AlertCircle, User } from 'lucide-react';
 import { getEnrolledCourses } from '@/lib/actions/courses';
+import { getCurrentUserProfile } from '@/lib/actions/student-profiles';
 import Link from 'next/link';
 import { RoleBadge } from '@/components/ui/RoleBadge';
 import { UserHeader } from '@/components/UserHeader';
@@ -11,7 +11,7 @@ import { ActivityFeed } from '@/components/dashboard/ActivityFeed';
 import { formatDistanceToNow } from 'date-fns';
 
 export default async function StudentDashboard() {
-    const user = await getCurrentUser();
+    const { user, profile, complete: profileComplete } = await getCurrentUserProfile();
 
     if (!user) {
         redirect('/auth/signin');
@@ -63,6 +63,25 @@ export default async function StudentDashboard() {
 
             {/* Main Content */}
             <main className="container mx-auto px-4 py-8">
+                {/* Profile Completion Banner */}
+                {!profileComplete && (
+                    <div className="mb-8 p-4 bg-amber-50 border-l-4 border-amber-400 rounded-lg flex items-start gap-4">
+                        <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                            <h3 className="font-semibold text-amber-900 mb-1">Update Your Profile</h3>
+                            <p className="text-amber-800 text-sm mb-3">
+                                Please complete your student profile to get the best learning experience.
+                            </p>
+                            <Link
+                                href="/dashboard/profile"
+                                className="inline-block px-4 py-2 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 transition-colors text-sm"
+                            >
+                                Complete Your Profile
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
                 {/* Welcome Section */}
                 <div className="mb-8">
                     <h2 className="text-3xl font-bold text-brand-dark mb-2">
@@ -159,21 +178,7 @@ export default async function StudentDashboard() {
                             </div>
                         )}
 
-                        {/* Quick Links */}
-                        <div className="mt-6">
-                            <h3 className="text-lg font-semibold mb-3 text-brand-dark">Quick Links</h3>
-                            <div className="space-y-2">
-                                <Link
-                                    href="/dashboard/enroll"
-                                    className="block p-3 rounded-lg bg-white border border-brand-dark/5 hover:border-brand-orange/30 hover:shadow-md transition-all group"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <BookOpen className="w-4 h-4 text-brand-dark group-hover:text-brand-orange transition-colors" />
-                                        <span className="text-sm font-medium text-brand-dark">Enroll in Course</span>
-                                    </div>
-                                </Link>
-                            </div>
-                        </div>
+                        {/* Quick Links removed per design request */}
                     </div>
                 </div>
             </main>

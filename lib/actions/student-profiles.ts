@@ -8,16 +8,21 @@ import { revalidatePath } from 'next/cache';
 export interface StudentProfile {
     id: string;
     user_id: string;
-    class: string;
-    section: string;
+    phone_no: string | null;
+    school: string | null;
+    branch: string | null;
+    section: string | null;
     onboarding_completed_at: string | null;
     created_at: string;
     updated_at: string;
 }
 
 export interface StudentProfileInput {
-    class: string;
-    section: string;
+    phone_no?: string;
+    school?: string;
+    branch?: string;
+    section?: string;
+    name?: string;
 }
 
 /**
@@ -79,6 +84,15 @@ export async function createOrUpdateStudentProfile(input: StudentProfileInput) {
         .eq('user_id', user.id)
         .single();
 
+    // Prepare update data - only allow specific fields
+    const profileData = {
+        phone_no: input.phone_no,
+        school: input.school,
+        branch: input.branch,
+        section: input.section,
+        onboarding_completed_at: new Date().toISOString(),
+    };
+
     let result;
 
     if (existing) {
@@ -86,11 +100,7 @@ export async function createOrUpdateStudentProfile(input: StudentProfileInput) {
         result = await supabase
             .from('student_profiles')
             // @ts-expect-error - Supabase type inference issue with update
-            .update({
-                class: input.class,
-                section: input.section,
-                onboarding_completed_at: new Date().toISOString(),
-            })
+            .update(profileData)
             .eq('user_id', user.id)
             .select()
             .single();
@@ -100,9 +110,7 @@ export async function createOrUpdateStudentProfile(input: StudentProfileInput) {
             .from('student_profiles')
             .insert({
                 user_id: user.id,
-                class: input.class,
-                section: input.section,
-                onboarding_completed_at: new Date().toISOString(),
+                ...profileData,
             } as any)
             .select()
             .single();
@@ -112,9 +120,25 @@ export async function createOrUpdateStudentProfile(input: StudentProfileInput) {
         return { success: false, error: result.error.message, data: null };
     }
 
+    // If name provided, persist to users table as well (allows students to update their display name)
+    if (input.name) {
+        const upsertRes = await supabase
+            .from('users')
+            .upsert({ id: user.id, name: input.name } as any, { onConflict: 'id' })
+            .select();
+
+        if (upsertRes.error) {
+            // Log but don't block profile update
+            console.error('Failed to update user name:', upsertRes.error.message);
+        }
+    }
+
     await logAction(user.id, 'student_profile.created', 'student_profile', (result.data as any).id, {
-        class: input.class,
+        phone_no: input.phone_no,
+        school: input.school,
+        branch: input.branch,
         section: input.section,
+        name: input.name,
     });
 
     revalidatePath('/dashboard');
@@ -171,4 +195,48 @@ export async function getStudentProfileWithUser(userId: string) {
     }
 
     return { success: true, data, error: null };
+}
+
+/**
+ * Check if student profile is complete
+ */
+export async function isProfileComplete(userId: string) {
+    const result = await getStudentProfile(userId);
+
+    if (!result.success || !result.data) {
+        return { success: true, complete: false };
+    }
+
+    const profile = result.data;
+    const isComplete = 
+        profile.phone_no && 
+        profile.school && 
+        profile.branch && 
+        profile.section;
+
+    return { success: true, complete: Boolean(isComplete) };
+}
+
+/**
+ * Get current authenticated user and their student profile using admin client.
+ * This is intended for server-side checks where RLS would otherwise block reads.
+ */
+export async function getCurrentUserProfile() {
+    const user = await requireAuth();
+
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+        .from('student_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+    if (error && error.code !== 'PGRST116') {
+        throw new Error(error.message);
+    }
+
+    const profile = data || null;
+    const complete = Boolean(profile && profile.phone_no && profile.school && profile.branch && profile.section);
+
+    return { user, profile, complete };
 }

@@ -121,6 +121,11 @@ export default function StudentCoursePage() {
             </nav>
 
             <main className="container mx-auto px-4 py-8">
+                <div className="mb-6 flex items-center justify-end">
+                    <Link href={`/dashboard/courses/${courseId}/player`} className="px-4 py-2 bg-brand-orange text-white rounded-md hover:bg-brand-orange/90">
+                        Start Course
+                    </Link>
+                </div>
                 {/* Course Info Card */}
                 <div className="card p-8 mb-8">
                     <div className="flex items-start justify-between mb-6">

@@ -88,6 +88,19 @@ export interface AssignmentSubmission {
     student?: User;
 }
 
+export interface StudentProfile {
+    id: string;
+    user_id: string;
+    phone_no: string | null;
+    school: string | null;
+    branch: string | null;
+    section: string | null;
+    onboarding_completed_at: string | null;
+    created_at: string;
+    updated_at: string;
+    user?: User;
+}
+
 // Helper types for database operations
 type AssignmentSubmissionRow = Omit<AssignmentSubmission, 'assignment' | 'student'>;
 type AssignmentSubmissionInsert = Omit<AssignmentSubmissionRow, 'id' | 'submitted_at'>;
