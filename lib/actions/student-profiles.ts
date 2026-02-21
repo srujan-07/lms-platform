@@ -235,8 +235,14 @@ export async function getCurrentUserProfile() {
         throw new Error(error.message);
     }
 
-    const profile = data || null;
-    const complete = Boolean(profile && profile.phone_no && profile.school && profile.branch && profile.section);
+    const profile: StudentProfile | null = (data as StudentProfile | null);
+    const complete = Boolean(
+        profile &&
+        profile.phone_no &&
+        profile.school &&
+        profile.branch &&
+        profile.section
+    );
 
     return { user, profile, complete };
 }
