@@ -8,8 +8,8 @@ export const stackServerApp = new StackServerApp({
         afterSignIn: "/dashboard",
         afterSignUp: "/dashboard",
         afterSignOut: "/",
-        // emailVerification is handled by the [...stack] catch-all at /handler/*
-        // Stack Auth sends users here after they click the verification link
-        emailVerification: "/handler/email-verification",
+        // NOTE: Do NOT override emailVerification here.
+        // Stack Auth handles the /handler/email-verification?code=... callback
+        // internally. Overriding it breaks the verification flow.
     },
 });
