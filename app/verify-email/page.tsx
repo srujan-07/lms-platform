@@ -1,8 +1,10 @@
 import { Shield, Mail } from 'lucide-react';
-import ResendButton from './ResendButton';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
-// Static page — all Stack Auth interaction happens client-side in ResendButton
+// Load ResendButton only in the browser — Stack Auth hooks throw during SSR prerender
+const ResendButton = dynamic(() => import('./ResendButton'), { ssr: false });
+
 export default function VerifyEmailPage() {
     return (
         <div className="min-h-screen bg-brand-light flex items-center justify-center px-4">
@@ -28,7 +30,6 @@ export default function VerifyEmailPage() {
                         Check your spam folder if you don&apos;t see it.
                     </p>
 
-                    {/* Client component handles resend + sign-out + shows email */}
                     <ResendButton />
                 </div>
 
