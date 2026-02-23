@@ -8,6 +8,8 @@ const updateCourseSchema = z.object({
     description: z.string().max(1000).optional(),
     lecturer_id: z.string().uuid().optional(),
     lecturerIds: z.array(z.string()).optional(),
+    rollNoStart: z.number().int().positive().optional().nullable(),
+    rollNoEnd: z.number().int().positive().optional().nullable(),
 });
 
 export async function GET(

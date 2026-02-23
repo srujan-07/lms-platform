@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, Loader } from 'lucide-react';
 
 interface ProfileFormData {
-    phone_no: string;
+    roll_no: string;
     school: string;
     branch: string;
     section: string;
@@ -19,7 +19,7 @@ export default function StudentProfilePage() {
     const [user, setUser] = useState<any>(null);
     const [profile, setProfile] = useState<any>(null);
     const [formData, setFormData] = useState<ProfileFormData>({
-        phone_no: '',
+        roll_no: '',
         school: '',
         branch: '',
         section: '',
@@ -44,7 +44,7 @@ export default function StudentProfilePage() {
                 setProfile(data.profile || null);
 
                 setFormData({
-                    phone_no: data.profile?.phone_no || '',
+                    roll_no: data.profile?.roll_no || '',
                     school: data.profile?.school || '',
                     branch: data.profile?.branch || '',
                     section: data.profile?.section || '',
@@ -77,7 +77,7 @@ export default function StudentProfilePage() {
 
         try {
             // Validate required fields
-            if (!formData.phone_no || !formData.school || !formData.branch || !formData.section) {
+            if (!formData.roll_no || !formData.school || !formData.branch || !formData.section) {
                 setError('All fields are required');
                 setSaving(false);
                 return;
@@ -89,7 +89,7 @@ export default function StudentProfilePage() {
             if (result.success) {
                 setProfile(result.data);
                 setSuccess(true);
-                
+
                 // Redirect to dashboard after 1 second
                 setTimeout(() => {
                     router.push('/dashboard');
@@ -163,18 +163,18 @@ export default function StudentProfilePage() {
                             {/* Read-only Fields */}
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
-                                            <label className="block text-sm font-medium text-brand-dark mb-2">
-                                                Name
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="name"
-                                                value={formData.name}
-                                                onChange={handleChange}
-                                                placeholder="Your full name"
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-brand-dark placeholder-gray-400 focus:outline-none focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
-                                            />
-                                            <p className="text-xs text-brand-dark/50 mt-1">You can update your display name</p>
+                                    <label className="block text-sm font-medium text-brand-dark mb-2">
+                                        Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        placeholder="Your full name"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg text-brand-dark placeholder-gray-400 focus:outline-none focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
+                                    />
+                                    <p className="text-xs text-brand-dark/50 mt-1">You can update your display name</p>
                                 </div>
 
                                 <div>
@@ -196,19 +196,22 @@ export default function StudentProfilePage() {
                             {/* Editable Fields */}
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div>
-                                    <label htmlFor="phone_no" className="block text-sm font-medium text-brand-dark mb-2">
-                                        Phone Number *
+                                    <label htmlFor="roll_no" className="block text-sm font-medium text-brand-dark mb-2">
+                                        Roll Number *
                                     </label>
                                     <input
-                                        type="tel"
-                                        id="phone_no"
-                                        name="phone_no"
-                                        value={formData.phone_no}
+                                        type="text"
+                                        id="roll_no"
+                                        name="roll_no"
+                                        value={formData.roll_no}
                                         onChange={handleChange}
-                                        placeholder="Enter your phone number"
+                                        placeholder="Enter your roll number"
+                                        pattern="[0-9]*"
+                                        inputMode="numeric"
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg text-brand-dark placeholder-gray-400 focus:outline-none focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
                                         required
                                     />
+                                    <p className="text-xs text-brand-dark/50 mt-1">Must be unique — one roll number per account</p>
                                 </div>
 
                                 <div>

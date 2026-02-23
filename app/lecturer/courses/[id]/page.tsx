@@ -12,6 +12,8 @@ interface Course {
     title: string;
     description: string;
     enrollment_count: number;
+    roll_no_start: number | null;
+    roll_no_end: number | null;
 }
 
 interface LectureNote {
@@ -401,6 +403,8 @@ function EditCourseModal({ isOpen, onClose, course, onUpdate, userRole }: any) {
         title: course?.title || '',
         description: course?.description || '',
         lecturerIds: [] as string[],
+        rollNoStart: '',
+        rollNoEnd: ''
     });
     const [lecturers, setLecturers] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -412,6 +416,8 @@ function EditCourseModal({ isOpen, onClose, course, onUpdate, userRole }: any) {
                 description: course.description || '',
                 // Initialize with current lecturers
                 lecturerIds: course.lecturers?.map((l: any) => l.user?.id || l.id) || [course.lecturer_id],
+                rollNoStart: course.roll_no_start?.toString() || '',
+                rollNoEnd: course.roll_no_end?.toString() || '',
             });
         }
     }, [course]);
@@ -438,7 +444,18 @@ function EditCourseModal({ isOpen, onClose, course, onUpdate, userRole }: any) {
         e.preventDefault();
         setLoading(true);
         try {
-            await onUpdate(formData);
+            const payload = {
+                ...formData,
+                rollNoStart: formData.rollNoStart === '' ? null : parseInt(formData.rollNoStart, 10),
+                rollNoEnd: formData.rollNoEnd === '' ? undefined : parseInt(formData.rollNoEnd, 10), // The API expects rollNoEnd if provided, null is for unset
+            };
+            // Correcting the manual logic for API
+            const finalPayload = {
+                ...formData,
+                rollNoStart: formData.rollNoStart === '' ? null : parseInt(formData.rollNoStart, 10),
+                rollNoEnd: formData.rollNoEnd === '' ? null : parseInt(formData.rollNoEnd, 10),
+            };
+            await onUpdate(finalPayload);
             onClose();
         } catch (error) {
             console.error(error);
@@ -475,6 +492,32 @@ function EditCourseModal({ isOpen, onClose, course, onUpdate, userRole }: any) {
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         />
                     </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Start Roll Number</label>
+                            <input
+                                type="number"
+                                className="input w-full"
+                                value={formData.rollNoStart}
+                                onChange={(e) => setFormData({ ...formData, rollNoStart: e.target.value })}
+                                placeholder="Min"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">End Roll Number</label>
+                            <input
+                                type="number"
+                                className="input w-full"
+                                value={formData.rollNoEnd}
+                                onChange={(e) => setFormData({ ...formData, rollNoEnd: e.target.value })}
+                                placeholder="Max"
+                            />
+                        </div>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                        Leave empty for no limit.
+                    </p>
 
                     {userRole === 'admin' && (
                         <div>

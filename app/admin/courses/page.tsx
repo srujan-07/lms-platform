@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { BookOpen, Plus, Edit2, Trash2, Loader2, Key, Copy, Check, Users } from 'lucide-react';
 import Link from 'next/link';
 import { ManageLecturersModal } from '@/components/admin/ManageLecturersModal';
+import { ManageRollRangeModal } from '@/components/admin/ManageRollRangeModal';
+import { Hash } from 'lucide-react';
 
 interface Course {
     id: string;
@@ -25,6 +27,8 @@ interface Course {
         name: string;
         email: string;
     };
+    roll_no_start: number | null;
+    roll_no_end: number | null;
 }
 
 export default function AdminCoursesPage() {
@@ -37,6 +41,12 @@ export default function AdminCoursesPage() {
         courseId: string;
         courseTitle: string;
     }>({ isOpen: false, courseId: '', courseTitle: '' });
+    const [manageRollRangeModal, setManageRollRangeModal] = useState<{
+        isOpen: boolean;
+        courseId: string;
+        courseTitle: string;
+        currentRange: { start: number | null; end: number | null };
+    }>({ isOpen: false, courseId: '', courseTitle: '', currentRange: { start: null, end: null } });
 
     useEffect(() => {
         fetchCourses();
@@ -101,6 +111,19 @@ export default function AdminCoursesPage() {
         setManageLecturersModal({ isOpen: false, courseId: '', courseTitle: '' });
     };
 
+    const openManageRollRangeModal = (course: Course) => {
+        setManageRollRangeModal({
+            isOpen: true,
+            courseId: course.id,
+            courseTitle: course.title,
+            currentRange: { start: course.roll_no_start, end: course.roll_no_end }
+        });
+    };
+
+    const closeManageRollRangeModal = () => {
+        setManageRollRangeModal(prev => ({ ...prev, isOpen: false }));
+    };
+
     return (
         <div className="min-h-screen bg-brand-light">
             <nav className="bg-brand-light/80 backdrop-blur-md shadow-sm border-b border-brand-dark/5 sticky top-0 z-10 transition-all">
@@ -147,6 +170,7 @@ export default function AdminCoursesPage() {
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase">Title</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase">Lecturers</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase">Roll Range</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase">Access Code</th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-brand-dark/60 uppercase">Created</th>
                                         <th className="px-6 py-3 text-right text-xs font-medium text-brand-dark/60 uppercase">Actions</th>
@@ -189,6 +213,23 @@ export default function AdminCoursesPage() {
                                                     >
                                                         <Users className="w-3 h-3" />
                                                         Manage
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col gap-1.5">
+                                                    <span className="text-sm text-brand-dark font-medium">
+                                                        {course.roll_no_start !== null || course.roll_no_end !== null
+                                                            ? `${course.roll_no_start ?? '∞'} – ${course.roll_no_end ?? '∞'}`
+                                                            : 'No Limit'
+                                                        }
+                                                    </span>
+                                                    <button
+                                                        onClick={() => openManageRollRangeModal(course)}
+                                                        className="text-xs text-brand-orange hover:text-brand-orange/80 font-medium flex items-center gap-1 w-fit transition-colors"
+                                                    >
+                                                        <Hash className="w-3 h-3" />
+                                                        Set Range
                                                     </button>
                                                 </div>
                                             </td>
@@ -259,6 +300,14 @@ export default function AdminCoursesPage() {
                 onClose={closeManageLecturersModal}
                 courseId={manageLecturersModal.courseId}
                 courseTitle={manageLecturersModal.courseTitle}
+                onUpdate={fetchCourses}
+            />
+            <ManageRollRangeModal
+                isOpen={manageRollRangeModal.isOpen}
+                onClose={closeManageRollRangeModal}
+                courseId={manageRollRangeModal.courseId}
+                courseTitle={manageRollRangeModal.courseTitle}
+                currentRange={manageRollRangeModal.currentRange}
                 onUpdate={fetchCourses}
             />
         </div>

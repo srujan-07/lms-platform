@@ -10,6 +10,8 @@ const createCourseSchema = z.object({
     lecturerId: z.string().uuid().optional(),
     lecturerIds: z.array(z.string()).optional(),
     accessCode: z.string().min(4).max(20).optional(),
+    rollNoStart: z.number().int().positive().optional(),
+    rollNoEnd: z.number().int().positive().optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -58,13 +60,13 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { title, description, lecturerId, lecturerIds, accessCode } = validation.data;
+        const { title, description, lecturerId, lecturerIds, accessCode, rollNoStart, rollNoEnd } = validation.data;
 
         // Handle legacy lecturerId if lecturerIds not provided
         const finalLecturerIds = lecturerIds || (lecturerId ? [lecturerId] : []);
 
         // Create course
-        const result = await createCourse(title, description || '', finalLecturerIds, accessCode);
+        const result = await createCourse(title, description || '', finalLecturerIds, accessCode, rollNoStart, rollNoEnd);
 
         if (!result.success) {
             return NextResponse.json(

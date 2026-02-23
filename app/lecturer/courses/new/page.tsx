@@ -14,6 +14,8 @@ export default function NewCoursePage() {
         description: '',
         accessCode: '',
         lecturerIds: [] as string[],
+        rollNoStart: '',
+        rollNoEnd: ''
     });
     const [loading, setLoading] = useState(false);
     const [lecturers, setLecturers] = useState<any[]>([]);
@@ -70,10 +72,15 @@ export default function NewCoursePage() {
         setLoading(true);
 
         try {
+            const payload = {
+                ...formData,
+                rollNoStart: formData.rollNoStart === '' ? undefined : parseInt(formData.rollNoStart, 10),
+                rollNoEnd: formData.rollNoEnd === '' ? undefined : parseInt(formData.rollNoEnd, 10),
+            };
             const response = await fetch('/api/courses', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(payload),
             });
 
             const data = await response.json();
@@ -236,6 +243,38 @@ export default function NewCoursePage() {
                                 Students will use this code to enroll in your course
                             </p>
                         </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="rollNoStart" className="block text-sm font-medium text-gray-700 mb-2">
+                                    Start Roll Number
+                                </label>
+                                <input
+                                    id="rollNoStart"
+                                    type="number"
+                                    className="input w-full"
+                                    value={formData.rollNoStart}
+                                    onChange={(e) => setFormData({ ...formData, rollNoStart: e.target.value })}
+                                    placeholder="e.g. 101"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="rollNoEnd" className="block text-sm font-medium text-gray-700 mb-2">
+                                    End Roll Number
+                                </label>
+                                <input
+                                    id="rollNoEnd"
+                                    type="number"
+                                    className="input w-full"
+                                    value={formData.rollNoEnd}
+                                    onChange={(e) => setFormData({ ...formData, rollNoEnd: e.target.value })}
+                                    placeholder="e.g. 200"
+                                />
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                            Optional: Set a range to restrict enrollment to specific students.
+                        </p>
 
                         {error && (
                             <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">

@@ -83,8 +83,10 @@ export async function getEnrolledCourses(studentId: string) {
 export async function createCourse(
     title: string,
     description: string,
-    lecturerIds: string[] = [], // Changed from optional single ID to array
-    accessCode?: string
+    lecturerIds: string[] = [],
+    accessCode?: string,
+    rollNoStart?: number,
+    rollNoEnd?: number
 ) {
     const user = await requireAuth();
 
@@ -123,8 +125,10 @@ export async function createCourse(
         .insert({
             title,
             description,
-            lecturer_id: primaryLecturerId, // Legacy field
+            lecturer_id: primaryLecturerId,
             access_code: finalAccessCode.toUpperCase(),
+            roll_no_start: rollNoStart ?? null,
+            roll_no_end: rollNoEnd ?? null,
         } as any)
         .select()
         .single();
@@ -167,7 +171,7 @@ export async function createCourse(
 
 export async function updateCourse(
     courseId: string,
-    updates: { title?: string; description?: string; lecturerIds?: string[] }
+    updates: { title?: string; description?: string; lecturerIds?: string[]; rollNoStart?: number | null; rollNoEnd?: number | null }
 ) {
     const user = await requireAuth();
 
@@ -205,9 +209,11 @@ export async function updateCourse(
     }
 
     // Separate course updates from lecturer updates
-    const courseUpdates: Record<string, string> = {};
+    const courseUpdates: Record<string, any> = {};
     if (updates.title !== undefined) courseUpdates.title = updates.title;
     if (updates.description !== undefined) courseUpdates.description = updates.description;
+    if (updates.rollNoStart !== undefined) courseUpdates.roll_no_start = updates.rollNoStart;
+    if (updates.rollNoEnd !== undefined) courseUpdates.roll_no_end = updates.rollNoEnd;
 
     // Update course details if provided
     let updatedCourse = course;
@@ -415,6 +421,33 @@ export async function enrollWithAccessCode(accessCode: string) {
 
     const course = (courseResult as any).data;
     const supabase = await createClient();
+
+    // Roll number range validation
+    if (course.roll_no_start != null || course.roll_no_end != null) {
+        const adminDb = createAdminClient();
+        const { data: profileData } = await (adminDb
+            .from('student_profiles')
+            .select('roll_no')
+            .eq('user_id', user.id)
+            .single() as any);
+
+        const rollNo = profileData?.roll_no ? parseInt(profileData.roll_no, 10) : null;
+
+        if (rollNo === null || isNaN(rollNo)) {
+            return { success: false, error: 'Please set your roll number in your profile before enrolling.', data: null };
+        }
+
+        const withinStart = course.roll_no_start == null || rollNo >= course.roll_no_start;
+        const withinEnd = course.roll_no_end == null || rollNo <= course.roll_no_end;
+
+        if (!withinStart || !withinEnd) {
+            return {
+                success: false,
+                error: `Your roll number (${rollNo}) is not within the allowed range for this course (${course.roll_no_start ?? '∞'} – ${course.roll_no_end ?? '∞'}).`,
+                data: null,
+            };
+        }
+    }
 
     // Check if already enrolled
     const enrollmentCheck = await supabase

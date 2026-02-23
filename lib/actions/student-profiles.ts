@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache';
 export interface StudentProfile {
     id: string;
     user_id: string;
-    phone_no: string | null;
+    roll_no: string | null;
     school: string | null;
     branch: string | null;
     section: string | null;
@@ -18,7 +18,7 @@ export interface StudentProfile {
 }
 
 export interface StudentProfileInput {
-    phone_no?: string;
+    roll_no?: string;
     school?: string;
     branch?: string;
     section?: string;
@@ -38,7 +38,6 @@ export async function getStudentProfile(userId: string) {
         .single();
 
     if (error) {
-        // Not found is not an error for this use case
         if (error.code === 'PGRST116') {
             return { success: true, data: null, error: null };
         }
@@ -68,13 +67,10 @@ export async function checkOnboardingStatus(userId: string) {
 export async function createOrUpdateStudentProfile(input: StudentProfileInput) {
     const user = await requireAuth();
 
-    // Only students can create their own profile
     if (user.role !== 'student') {
         return { success: false, error: 'Only students can complete onboarding', data: null };
     }
 
-    // Use admin client for onboarding inserts since StackAuth users don't have Supabase auth context
-    // Authentication is already verified by requireAuth() above
     const supabase = createAdminClient();
 
     // Check if profile already exists
@@ -84,9 +80,8 @@ export async function createOrUpdateStudentProfile(input: StudentProfileInput) {
         .eq('user_id', user.id)
         .single();
 
-    // Prepare update data - only allow specific fields
     const profileData = {
-        phone_no: input.phone_no,
+        roll_no: input.roll_no,
         school: input.school,
         branch: input.branch,
         section: input.section,
@@ -96,7 +91,6 @@ export async function createOrUpdateStudentProfile(input: StudentProfileInput) {
     let result;
 
     if (existing) {
-        // Update existing profile
         result = await supabase
             .from('student_profiles')
             // @ts-expect-error - Supabase type inference issue with update
@@ -105,7 +99,6 @@ export async function createOrUpdateStudentProfile(input: StudentProfileInput) {
             .select()
             .single();
     } else {
-        // Create new profile
         result = await supabase
             .from('student_profiles')
             .insert({
@@ -117,10 +110,18 @@ export async function createOrUpdateStudentProfile(input: StudentProfileInput) {
     }
 
     if (result.error) {
+        // Unique constraint violation — roll number already taken
+        if (result.error.code === '23505') {
+            return {
+                success: false,
+                error: 'This roll number is already registered to another account.',
+                data: null,
+            };
+        }
         return { success: false, error: result.error.message, data: null };
     }
 
-    // If name provided, persist to users table as well (allows students to update their display name)
+    // Persist display name update
     if (input.name) {
         const upsertRes = await supabase
             .from('users')
@@ -128,13 +129,12 @@ export async function createOrUpdateStudentProfile(input: StudentProfileInput) {
             .select();
 
         if (upsertRes.error) {
-            // Log but don't block profile update
             console.error('Failed to update user name:', upsertRes.error.message);
         }
     }
 
     await logAction(user.id, 'student_profile.created', 'student_profile', (result.data as any).id, {
-        phone_no: input.phone_no,
+        roll_no: input.roll_no,
         school: input.school,
         branch: input.branch,
         section: input.section,
@@ -208,10 +208,10 @@ export async function isProfileComplete(userId: string) {
     }
 
     const profile = result.data;
-    const isComplete = 
-        profile.phone_no && 
-        profile.school && 
-        profile.branch && 
+    const isComplete =
+        profile.roll_no &&
+        profile.school &&
+        profile.branch &&
         profile.section;
 
     return { success: true, complete: Boolean(isComplete) };
@@ -219,7 +219,6 @@ export async function isProfileComplete(userId: string) {
 
 /**
  * Get current authenticated user and their student profile using admin client.
- * This is intended for server-side checks where RLS would otherwise block reads.
  */
 export async function getCurrentUserProfile() {
     const user = await requireAuth();
@@ -238,7 +237,7 @@ export async function getCurrentUserProfile() {
     const profile: StudentProfile | null = (data as StudentProfile | null);
     const complete = Boolean(
         profile &&
-        profile.phone_no &&
+        profile.roll_no &&
         profile.school &&
         profile.branch &&
         profile.section
