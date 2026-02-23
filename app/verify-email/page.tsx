@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useStackApp, useUser } from '@stackframe/stack';
 import { Shield, Mail, RefreshCw, LogOut } from 'lucide-react';
 import { useState } from 'react';
