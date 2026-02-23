@@ -15,13 +15,24 @@ export async function middleware(request: NextRequest) {
     }
 
     // Check authentication
-    const user = await stackServerApp.getUser();
+    // includeRestricted: true ensures users who signed up but haven't verified
+    // their email yet are returned (instead of null), so we can redirect them
+    // to the email-verification page rather than bouncing them to sign-in.
+    const user = await stackServerApp.getUser({ or: 'return-null', includeRestricted: true });
 
     if (!user) {
         // Redirect to sign in
         const url = request.nextUrl.clone();
         url.pathname = '/handler/sign-in';
         url.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(url);
+    }
+
+    // If the user signed up but hasn't verified their email yet, redirect them
+    // to Stack Auth's built-in email verification page.
+    if (user.isRestricted) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/handler/email-verification';
         return NextResponse.redirect(url);
     }
 

@@ -6,5 +6,6 @@ export const stackServerApp = new StackServerApp({
         signIn: "/handler/sign-in",
         afterSignIn: "/dashboard",
         afterSignOut: "/",
+        emailVerification: "/handler/email-verification",
     },
 });
