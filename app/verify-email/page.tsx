@@ -1,37 +1,14 @@
-'use client';
+import { stackServerApp } from '@/lib/auth/stackauth';
+import { Shield, Mail } from 'lucide-react';
+import ResendButton from './ResendButton';
+import Link from 'next/link';
 
+// Force dynamic so Next.js doesn't attempt to prerender this at build time
 export const dynamic = 'force-dynamic';
 
-import { useStackApp, useUser } from '@stackframe/stack';
-import { Shield, Mail, RefreshCw, LogOut } from 'lucide-react';
-import { useState } from 'react';
-
-export default function VerifyEmailPage() {
-    const user = useUser({ or: 'redirect', includeRestricted: true });
-    const app = useStackApp();
-    const [resent, setResent] = useState(false);
-    const [loading, setLoading] = useState(false);
-
-    async function handleResend() {
-        setLoading(true);
-        try {
-            // Get primary contact channel and resend verification
-            const contactChannels = await user.listContactChannels();
-            const primaryEmail = contactChannels.find(c => c.isPrimary && c.type === 'email');
-            if (primaryEmail) {
-                await primaryEmail.sendVerificationEmail();
-                setResent(true);
-            }
-        } catch (err) {
-            console.error('Failed to resend verification email:', err);
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function handleSignOut() {
-        await app.signOut();
-    }
+export default async function VerifyEmailPage() {
+    const user = await stackServerApp.getUser({ or: 'return-null', includeRestricted: true });
+    const email = user?.primaryEmail ?? null;
 
     return (
         <div className="min-h-screen bg-brand-light flex items-center justify-center px-4">
@@ -50,7 +27,6 @@ export default function VerifyEmailPage() {
                         </div>
                     </div>
 
-                    {/* Heading */}
                     <h1 className="text-2xl font-bold text-brand-dark mb-2">
                         Verify your email
                     </h1>
@@ -58,43 +34,23 @@ export default function VerifyEmailPage() {
                         We sent a verification link to
                     </p>
                     <p className="font-semibold text-brand-dark mb-6">
-                        {user?.primaryEmail ?? 'your email address'}
+                        {email ?? 'your email address'}
                     </p>
-
                     <p className="text-sm text-brand-dark/50 mb-8">
-                        Click the link in your inbox to activate your account. Check your spam folder if you don&apos;t see it.
+                        Click the link in your inbox to activate your account.
+                        Check your spam folder if you don&apos;t see it.
                     </p>
 
-                    {/* Actions */}
-                    <div className="space-y-3">
-                        {resent ? (
-                            <div className="w-full py-3 px-4 bg-green-50 text-green-700 rounded-lg text-sm font-medium border border-green-200">
-                                ✅ Verification email resent!
-                            </div>
-                        ) : (
-                            <button
-                                onClick={handleResend}
-                                disabled={loading}
-                                className="w-full py-3 px-4 bg-brand-orange text-white rounded-lg font-medium hover:bg-brand-orange/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                                {loading ? 'Sending…' : 'Resend verification email'}
-                            </button>
-                        )}
+                    {/* Resend button (client component) */}
+                    <ResendButton />
 
-                        <button
-                            onClick={handleSignOut}
-                            className="w-full py-3 px-4 bg-transparent text-brand-dark/50 rounded-lg font-medium hover:text-brand-dark hover:bg-brand-dark/5 transition-all flex items-center justify-center gap-2"
-                        >
-                            <LogOut className="w-4 h-4" />
-                            Sign out
-                        </button>
-                    </div>
                 </div>
 
-                {/* Footer note */}
                 <p className="text-center text-xs text-brand-dark/40 mt-4">
-                    Already verified? <a href="/handler/sign-in" className="text-brand-orange hover:underline">Sign in again</a>
+                    Already verified?{' '}
+                    <Link href="/handler/sign-in" className="text-brand-orange hover:underline">
+                        Sign in again
+                    </Link>
                 </p>
             </div>
         </div>
