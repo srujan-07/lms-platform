@@ -7,7 +7,8 @@ export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Public routes that don't require authentication
-    const publicRoutes = ['/', '/handler', '/api'];
+    // /verify-email is public so restricted (unverified) users can reach it
+    const publicRoutes = ['/', '/handler', '/api', '/verify-email'];
 
     // Allow access to public routes and all handler sub-routes
     if (publicRoutes.some(route => pathname === route || pathname.startsWith(route + '/'))) {
@@ -29,10 +30,11 @@ export async function middleware(request: NextRequest) {
     }
 
     // If the user signed up but hasn't verified their email yet, redirect them
-    // to Stack Auth's built-in email verification page.
+    // to the custom verify-email page (NOT /handler/email-verification which
+    // requires a ?code= param and causes a 500 without one).
     if (user.isRestricted) {
         const url = request.nextUrl.clone();
-        url.pathname = '/handler/email-verification';
+        url.pathname = '/verify-email';
         return NextResponse.redirect(url);
     }
 
