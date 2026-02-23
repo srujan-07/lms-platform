@@ -33,6 +33,13 @@ export default function ResendButton() {
 
     return (
         <div className="space-y-3">
+            {/* Show the email address if available */}
+            {user?.primaryEmail && (
+                <p className="text-sm font-medium text-brand-dark bg-brand-light rounded-lg px-4 py-2">
+                    {user.primaryEmail}
+                </p>
+            )}
+
             {resent ? (
                 <div className="w-full py-3 px-4 bg-green-50 text-green-700 rounded-lg text-sm font-medium border border-green-200">
                     ✅ Verification email resent!
@@ -40,7 +47,7 @@ export default function ResendButton() {
             ) : (
                 <button
                     onClick={handleResend}
-                    disabled={loading}
+                    disabled={loading || !user}
                     className="w-full py-3 px-4 bg-brand-orange text-white rounded-lg font-medium hover:bg-brand-orange/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
